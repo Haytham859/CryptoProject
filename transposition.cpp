@@ -46,61 +46,61 @@ QString railFenceDecrypt(const QString &text, int key) {
 }
 
 // Columnar
-QString columnarEncrypt(const QString &text, const QString &key) {
-    int nCol = key.length();
-    int nRow = (text.length() + nCol -1)/nCol;
-    QVector<QString> grid(nCol);
-    for(int i=0;i<text.length();i++) grid[i%nCol] += text[i];
-
-    QString tempKey = key;
-    QString sortedKey = tempKey;
-    std::sort(sortedKey.begin(), sortedKey.end());
-
+QString columnarEncrypt(const QString &text, int key) {
     QString result;
-    for(QChar c : sortedKey){
-        int idx = tempKey.indexOf(c);
-        result += grid[idx];
-        tempKey[idx] = '*';
+    QString cleanText = text;
+    int nCol = key;
+    // int nRow = (text.length() + nCol -1)/nCol;
+
+    QVector<QString> grid(nCol);
+    for(int i=0;i<text.length();i++) grid[i%nCol] += cleanText[i];
+
+    for(int j = 0; j < nCol; j++){
+        result += grid[j];
     }
+
     return result;
 }
 
-QString columnarDecrypt(const QString &text, const QString &key) {
-    int nCol = key.length();
+QString columnarDecrypt(const QString &text, int key) {
+    int nCol = key;
     int nRow = (text.length() + nCol -1)/nCol;
+    QString cleanText = text;
+    QString result;
+
     QVector<int> colLen(nCol,nRow);
     int extra = nRow*nCol - text.length();
     for(int i=nCol-extra;i<nCol;i++) colLen[i]--;
 
     QVector<QString> grid(nCol);
     int idx=0;
-
-    QString tempKey = key;
-    QString sortedKey = tempKey;
-    std::sort(sortedKey.begin(), sortedKey.end());
-
-    for(QChar c : sortedKey){
-        int k = tempKey.indexOf(c);
-        grid[k] = text.mid(idx, colLen[k]);
-        idx += colLen[k];
-        tempKey[k]='*';
+    for(int j = 0; j < nCol; j++){
+        grid[j] = cleanText.mid(idx, colLen[j]);
+        idx += colLen[j];
     }
 
-    QString result;
-    for(int i=0;i<nRow;i++){
-        for(int j=0;j<nCol;j++){
-            if(i<grid[j].length()) result += grid[j][i];
+    for(int i = 0; i < nRow; i++){
+        for(int j = 0; j < nCol; j++){
+            if(i < grid[j].length()) {
+                result += grid[j][i];
+            }
         }
     }
+
     return result;
 }
 
 // Row Transposition (مثال بسيط)
 QString rowTranspositionEncrypt(const QString &text, const QString &key) {
+    QString cleanText = text;
     int nCol = key.length();
-    int nRow = (text.length() + nCol -1)/nCol;
+    int padding = (nCol - (cleanText.length() % nCol)) % nCol;
+    for(int i = 0; i < padding; i++) {
+        cleanText += 'X';
+    }
+
     QVector<QString> grid(nCol);
-    for(int i=0;i<text.length();i++) grid[i%nCol] += text[i];
+    for(int i=0;i<cleanText.length();i++) grid[i%nCol] += cleanText[i];
 
     QString tempKey = key;
     QString sortedKey = tempKey;
@@ -117,10 +117,7 @@ QString rowTranspositionEncrypt(const QString &text, const QString &key) {
 
 QString rowTranspositionDecrypt(const QString &text, const QString &key) {
     int nCol = key.length();
-    int nRow = (text.length() + nCol -1)/nCol;
-    QVector<int> colLen(nCol, nRow);
-    int extra = nRow*nCol - text.length();
-    for(int i=nCol-extra;i<nCol;i++) colLen[i]--;
+    int nRow = text.length() / nCol;
 
     QVector<QString> grid(nCol);
     int idx=0;
@@ -131,15 +128,15 @@ QString rowTranspositionDecrypt(const QString &text, const QString &key) {
 
     for(QChar c : sortedKey){
         int k = tempKey.indexOf(c);
-        grid[k] = text.mid(idx, colLen[k]);
-        idx += colLen[k];
+        grid[k] = text.mid(idx, nRow);
+        idx += nRow;
         tempKey[k]='*';
     }
 
     QString result;
-    for(int i=0;i<nRow;i++){
-        for(int j=0;j<nCol;j++){
-            if(i<grid[j].length()) result += grid[j][i];
+    for(int i = 0; i < nRow; i++){
+        for(int j = 0; j < nCol; j++){
+            result += grid[j][i];
         }
     }
     return result;

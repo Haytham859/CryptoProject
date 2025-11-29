@@ -18,13 +18,21 @@ static int modInverse(int a, int m) {
     return -1;
 }
 
+static int mathMod(int a, int b) {
+    return (a % b + b) % b;
+}
+
 QString affineEncrypt(const QString &text, int a, int b) {
-    if (gcd(a, 26) != 1) return "Error: 'a' must be coprime with 26!";
+    if (gcd(a, 26) != 1){
+        QMessageBox::warning(nullptr,"ERROR","'a' must be coprime with 26!");
+        return " ";
+    }
+
     QString result;
     for (QChar c : text) {
         if (c.isLetter()) {
             QChar base = c.isUpper() ? 'A' : 'a';
-            int val = (a * (c.unicode() - base.unicode()) + b) % 26;
+            int val = mathMod(a * (c.unicode() - base.unicode()) + b, 26);
             result.append(QChar(val + base.unicode()));
         } else result.append(c);
     }
@@ -33,13 +41,15 @@ QString affineEncrypt(const QString &text, int a, int b) {
 
 QString affineDecrypt(const QString &text, int a, int b) {
     int inv = modInverse(a, 26);
-    if (inv == -1) return "Error: No modular inverse for 'a'!";
+    if (inv == -1) {
+            QMessageBox::warning(nullptr, "Error", "No modular inverse for 'a'!");
+            return "";
+        }
     QString result;
     for (QChar c : text) {
         if (c.isLetter()) {
             QChar base = c.isUpper() ? 'A' : 'a';
-            int val = (inv * ((c.unicode() - base.unicode()) - b)) % 26;
-            if (val < 0) val += 26;
+            int val = mathMod(inv * ((c.unicode() - base.unicode()) - b), 26);
             result.append(QChar(val + base.unicode()));
         } else result.append(c);
     }

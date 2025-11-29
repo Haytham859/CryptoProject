@@ -18,13 +18,21 @@ static int modInverse(int a, int m) {
     return -1;
 }
 
+static int mathMod(int a, int b) {
+    return (a % b + b) % b;
+}
+
 QString multiplicativeEncrypt(const QString &text, int key) {
-    if (gcd(key, 26) != 1) return "Error: Key not coprime with 26!";
+    if (gcd(key, 26) != 1) {
+        QMessageBox::warning(nullptr,"ERROR","Key not coprime with 26!");
+        return " ";
+    }
     QString result;
     for (QChar c : text) {
         if (c.isLetter()) {
             QChar base = c.isUpper() ? 'A' : 'a';
-            int val = ((c.unicode() - base.unicode()) * key) % 26;
+            int val = ((c.unicode() - base.unicode()) * key);
+            val = mathMod(val, 26);
             result.append(QChar(val + base.unicode()));
         } else result.append(c);
     }
@@ -33,13 +41,18 @@ QString multiplicativeEncrypt(const QString &text, int key) {
 
 QString multiplicativeDecrypt(const QString &text, int key) {
     int inv = modInverse(key, 26);
-    if (inv == -1) return "Error: No modular inverse for key!";
+
+    if (inv == -1){
+        QMessageBox::warning(nullptr,"ERROR","No modular inverse for key!");
+        return " ";
+    }
+
     QString result;
     for (QChar c : text) {
         if (c.isLetter()) {
             QChar base = c.isUpper() ? 'A' : 'a';
-            int val = ((c.unicode() - base.unicode()) * inv) % 26;
-            if (val < 0) val += 26;
+            int val = ((c.unicode() - base.unicode()) * inv);
+            val = mathMod(val,26);
             result.append(QChar(val + base.unicode()));
         } else result.append(c);
     }

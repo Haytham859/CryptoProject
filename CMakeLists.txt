@@ -41,7 +41,11 @@ add_executable(CryptoDesk ${SOURCES} ${HEADERS}
     transposition.h
     transposition.cpp
     rsa.h
-    rsa.cpp)
+    rsa.cpp
+    customRSA.cpp
+    customRSA.h
+    dialogutils.h
+    dialogutils.cpp)
 
 # Link Qt6 libraries
 target_link_libraries(CryptoDesk Qt6::Widgets Qt6::Core Qt6::Gui)

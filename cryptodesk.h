@@ -6,6 +6,7 @@
 #include <QPlainTextEdit>
 #include <QComboBox>
 #include <QLabel>
+#include <qpushbutton.h>
 
 class CryptoDesk : public QMainWindow
 {
@@ -20,6 +21,7 @@ private slots:
     void encryptFile();
     void updateAlgoInfo();
     void addShadow(QWidget *widget);
+    bool validateInputs();
 
 private:
     QLineEdit *inputText;
@@ -28,6 +30,14 @@ private:
     QPlainTextEdit *outputText;
     QComboBox *algoCombo;
     QLabel *algoInfo;
+    QLabel *labelKey2;
+    QPushButton *generateKeyBtn;
+
+    QLabel *labelPub;
+    QLineEdit *publicKeyOutput;
+
+    QLabel *labelPriv;
+    QLineEdit *privateKeyOutput;
 };
 
 #endif // CRYPTODESK_H
