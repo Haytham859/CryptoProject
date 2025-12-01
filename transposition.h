@@ -9,8 +9,8 @@ QString railFenceEncrypt(const QString &text, int key);
 QString railFenceDecrypt(const QString &text, int key);
 
 // Columnar
-QString columnarEncrypt(const QString &text, const QString &key);
-QString columnarDecrypt(const QString &text, const QString &key);
+QString columnarEncrypt(const QString &text, int key);
+QString columnarDecrypt(const QString &text, int key);
 
 // Row Transposition
 QString rowTranspositionEncrypt(const QString &text, const QString &key);
