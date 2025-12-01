@@ -2,8 +2,9 @@
 #define DNA_H
 
 #include <QString>
+#include <QMessageBox>
 
-QString dnaEncrypt(const QString &text);
-QString dnaDecrypt(const QString &text);
+QString dnaEncrypt(QString text, QString key);
+QString dnaDecrypt(QString text, QString key);
 
 #endif // DNA_H

@@ -1,0 +1,5 @@
+D:/4th/Crypto/CryptoProject/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/CMakeFiles/CryptoDesk.dir
+D:/4th/Crypto/CryptoProject/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/CMakeFiles/edit_cache.dir
+D:/4th/Crypto/CryptoProject/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/CMakeFiles/rebuild_cache.dir
+D:/4th/Crypto/CryptoProject/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/CMakeFiles/CryptoDesk_autogen_timestamp_deps.dir
+D:/4th/Crypto/CryptoProject/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/CMakeFiles/CryptoDesk_autogen.dir
