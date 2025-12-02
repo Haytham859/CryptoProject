@@ -7,9 +7,11 @@
 #include <QTextStream>
 #include <QGraphicsDropShadowEffect>
 #include <QRegularExpression>
+#include <QInputDialog>
 
 // Include all cipher headers
 #include "caesar.h"
+#include "htmlexporter.h"
 #include "playfair.h"
 #include "hill.h"
 #include "multiplicative.h"
@@ -22,6 +24,7 @@
 #include "rsa.h"
 #include "customRSA.h"
 #include "dialogutils.h"
+#include "analysisdialog.h"
 
 #include <QRandomGenerator>
 
@@ -37,7 +40,7 @@ CryptoDesk::CryptoDesk(QWidget *parent)
     QWidget *central = new QWidget(this);
     setCentralWidget(central);
 
-    QLabel *appTitle = new QLabel("🔐 CryptoDesk");
+    QLabel *appTitle = new QLabel("CryptoDesk");
     appTitle->setStyleSheet("font-size: 22px; font-weight: bold; color: white; margin-left: 5px;");
     appTitle->setAlignment(Qt::AlignCenter);
 
@@ -134,12 +137,19 @@ CryptoDesk::CryptoDesk(QWidget *parent)
     publicKeyOutput->setVisible(false);
     privateKeyOutput->setVisible(false);
 
+    QPushButton *analyzeBtn = new QPushButton("Analyze");
+    addShadow(analyzeBtn);
+
+    importBtn = new QPushButton("Lab Report System");
+    addShadow(importBtn);
 
     QHBoxLayout *btnLayout = new QHBoxLayout();
     btnLayout->addWidget(encryptBtn);
     btnLayout->addWidget(decryptBtn);
     btnLayout->addWidget(fileBtn);
     btnLayout->addWidget(generateKeyBtn);
+    btnLayout->addWidget(analyzeBtn);
+    btnLayout->addWidget(importBtn);
 
     outputText = new QPlainTextEdit();
     outputText->setReadOnly(true);
@@ -155,7 +165,6 @@ CryptoDesk::CryptoDesk(QWidget *parent)
     layout->addWidget(keyInput2);
     layout->addWidget(labelAlgo);
     layout->addLayout(algoLayout);
-    // layout->addWidget(algoInfo);
     layout->addLayout(btnLayout);
     labelPub = new QLabel("Public Key (n, e):");
     labelPub->setVisible(false);
@@ -207,12 +216,28 @@ CryptoDesk::CryptoDesk(QWidget *parent)
         inputText->setFocus();
     });
 
+    connect(analyzeBtn, &QPushButton::clicked, [=](){
+        QString textToAnalyze = outputText->toPlainText();
+        if (textToAnalyze.isEmpty()) {
+            textToAnalyze = inputText->text();
+        }
+
+        if (textToAnalyze.isEmpty()) {
+            QMessageBox::warning(this, "Empty", "No text to analyze!");
+            return;
+        }
+
+        AnalysisDialog dlg(textToAnalyze, this);
+        dlg.exec();
+    });
+
+    connect(importBtn, &QPushButton::clicked, this, &CryptoDesk::handleLabReport);
     updateAlgoInfo();
 }
 
 void CryptoDesk::updateAlgoInfo() {
     QString algo = algoCombo->currentText();
-
+    importBtn->setVisible(false);
     keyInput2->setVisible(false);
     labelKey2->setVisible(false);
 
@@ -252,6 +277,7 @@ void CryptoDesk::updateAlgoInfo() {
         keyInput2->setPlaceholderText("Enter Number as a key ( e.g.: 8 ) ");
     }
     else if (algo == "DNA Cipher"){
+        importBtn->setVisible(true);
         algoInfo->setText("DNA Cipher: encodes text using nucleotide mapping.");
         inputText->setPlaceholderText("Enter a text ( e.g.: Hello World! ) ");
         keyInput->setPlaceholderText("Enter a text as a key ( e.g.: My Secret Key ) ");
@@ -508,4 +534,114 @@ void CryptoDesk::addShadow(QWidget *widget) {
     shadow->setOffset(3,3);
     shadow->setColor(QColor(0,0,0,160));
     widget->setGraphicsEffect(shadow);
+}
+
+void CryptoDesk::handleLabReport() {
+    // 1. نسأل المستخدم هو عايز إيه
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("Lab Report System");
+    msgBox.setText("Please select an action:");
+    msgBox.setIcon(QMessageBox::Question);
+
+    // بنضيف زراير مخصصة
+    QAbstractButton *pExportBtn = msgBox.addButton("📝 Generate New Report", QMessageBox::YesRole);
+    QAbstractButton *pImportBtn = msgBox.addButton("📂 Open Existing Report", QMessageBox::NoRole);
+    msgBox.addButton(QMessageBox::Cancel);
+
+    msgBox.exec();
+
+    // 2. نشوف المستخدم اختار إيه
+    if (msgBox.clickedButton() == pExportBtn) {
+        // --- مسار الـ EXPORT ---
+
+        // أ) التحقق من المدخلات (Validation)
+        if (inputText->text().isEmpty()) {
+            QMessageBox::warning(this, "Missing Data", "Cannot generate report: Diagnosis result (Text) is empty!");
+            return; // وقف هنا متكملش
+        }
+        if (keyInput->text().isEmpty()) {
+            QMessageBox::warning(this, "Missing Data", "Cannot generate report: Sample ID (Key) is empty!");
+            return; // وقف هنا متكملش
+        }
+
+        // ب) لو كله تمام، نفذ
+        performExport();
+
+    } else if (msgBox.clickedButton() == pImportBtn) {
+        // --- مسار الـ IMPORT ---
+        // هنا مش محتاجين نتأكد من inputs لأننا لسه هنملاهم من الملف
+        performImport();
+    }
+}
+
+void CryptoDesk::performExport() {
+    // 1. ناخد البيانات الجاهزة (إحنا اتأكدنا فوق إنها موجودة خلاص)
+    QString diagnosis = inputText->text();
+    QString sampleID = keyInput->text();
+
+    // (اختياري) نطلب اسم المريض
+    bool ok;
+    QString patientName = QInputDialog::getText(this, "Patient Data", "Enter Patient Name:", QLineEdit::Normal, "John Doe", &ok);
+    if (!ok) return;
+
+    // 2. التشفير
+    QString encryptedDNA = dnaEncrypt(diagnosis, sampleID);
+
+    // 3. فتح نافذة الحفظ
+    QString fileName = QFileDialog::getSaveFileName(this, "Save Report", "Report.html", "HTML Files (*.html)");
+    if (fileName.isEmpty()) return;
+
+    // 4. الحفظ باستخدام الكلاس اللي عملناه
+    if (HtmlExporter::saveLabReport(fileName, patientName, sampleID, encryptedDNA)) {
+        QMessageBox::information(this, "Success", "Report Generated!");
+    }
+}
+
+void CryptoDesk::performImport() {
+    // 1. فتح نافذة الاستيراد
+    QString fileName = QFileDialog::getOpenFileName(this, "Select Report", "", "HTML Files (*.html)");
+    if (fileName.isEmpty()) return;
+
+    // 2. استخدام الكلاس الخارجي للقراءة
+    ReportData data = HtmlExporter::parseLabReport(fileName);
+
+    if (data.isValid) {
+        // فك التشفير
+        QString result = dnaDecrypt(data.encryptedData, data.sampleID);
+
+        // عرض البيانات
+        algoCombo->setCurrentText("DNA Cipher");
+        inputText->setText(result);
+        keyInput->setText(data.sampleID);
+        outputText->setPlainText("Report Loaded:\n" + result);
+
+        QMessageBox::information(this, "Done", "Report Decoded Successfully!");
+    } else {
+        QMessageBox::critical(this, "Error", "Invalid Report File!");
+    }
+}
+
+void CryptoDesk::importHtmlReport() {
+    // 1. نفتح الملف
+    QString fileName = QFileDialog::getOpenFileName(this, "Select Lab Report", "", "HTML Files (*.html)");
+    if (fileName.isEmpty()) return;
+
+    // 2. نطلب من الكلاس الخارجي يحلل الملف ويرجعلنا البيانات
+    ReportData data = HtmlExporter::parseLabReport(fileName);
+
+    // 3. نتأكد إن البيانات سليمة ونعرضها
+    if (data.isValid) {
+        // نفك التشفير هنا في الواجهة (أو نستدعي دالة الفك)
+        QString decryptedDiagnosis = dnaDecrypt(data.encryptedData, data.sampleID);
+
+        // تحديث الواجهة
+        algoCombo->setCurrentText("DNA Cipher");
+        inputText->setText(decryptedDiagnosis);
+        keyInput->setText(data.sampleID);
+        outputText->setPlainText("Decrypted from HTML Report:\n" + decryptedDiagnosis);
+
+        QMessageBox::information(this, "Success", "Report loaded and decrypted successfully!");
+    } else {
+        QMessageBox::critical(this, "Error", "Invalid Report Format!\nCould not find Sample ID or DNA Data.");
+    }
 }

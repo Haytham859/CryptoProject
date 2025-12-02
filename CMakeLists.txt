@@ -45,7 +45,11 @@ add_executable(CryptoDesk ${SOURCES} ${HEADERS}
     customRSA.cpp
     customRSA.h
     dialogutils.h
-    dialogutils.cpp)
+    dialogutils.cpp
+    analysisdialog.h
+    analysisdialog.cpp
+    htmlexporter.h
+    htmlexporter.cpp)
 
 # Link Qt6 libraries
 target_link_libraries(CryptoDesk Qt6::Widgets Qt6::Core Qt6::Gui)

@@ -22,6 +22,10 @@ private slots:
     void updateAlgoInfo();
     void addShadow(QWidget *widget);
     bool validateInputs();
+    void importHtmlReport();
+    void handleLabReport();
+    void performExport();
+    void performImport();
 
 private:
     QLineEdit *inputText;
@@ -38,6 +42,8 @@ private:
 
     QLabel *labelPriv;
     QLineEdit *privateKeyOutput;
+
+    QPushButton *importBtn;
 };
 
 #endif // CRYPTODESK_H
