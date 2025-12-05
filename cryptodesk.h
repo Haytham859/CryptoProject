@@ -1,12 +1,20 @@
 #ifndef CRYPTODESK_H
 #define CRYPTODESK_H
 
+<<<<<<< HEAD
+=======
+#include "historydialog.h"
+>>>>>>> master
 #include <QMainWindow>
 #include <QLineEdit>
 #include <QPlainTextEdit>
 #include <QComboBox>
 #include <QLabel>
+<<<<<<< HEAD
 #include <qpushbutton.h>
+=======
+#include <QPushButton>
+>>>>>>> master
 
 class CryptoDesk : public QMainWindow
 {
@@ -44,6 +52,12 @@ private:
     QLineEdit *privateKeyOutput;
 
     QPushButton *importBtn;
+<<<<<<< HEAD
+=======
+
+    // <-- هنا ضيفنا المؤشر للـ History
+    HistoryDialog *historyDialog;
+>>>>>>> master
 };
 
 #endif // CRYPTODESK_H

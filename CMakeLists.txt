@@ -49,7 +49,15 @@ add_executable(CryptoDesk ${SOURCES} ${HEADERS}
     analysisdialog.h
     analysisdialog.cpp
     htmlexporter.h
+<<<<<<< HEAD
     htmlexporter.cpp)
+=======
+    htmlexporter.cpp
+    historyitemwidget.cpp
+    historyitemwidget.h
+    historydialog.h
+    historydialog.cpp)
+>>>>>>> master
 
 # Link Qt6 libraries
 target_link_libraries(CryptoDesk Qt6::Widgets Qt6::Core Qt6::Gui)
