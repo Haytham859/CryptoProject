@@ -1,0 +1,36 @@
+# Compiled Object files
+*.o
+*.obj
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.lo
+*.la
+*.lib
+*.a
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Qt Creator specific
+*.user
+*.user.*
+.qtcreator/
+build/
+build-*/
+*.pro.user
+
+# Makefiles
+Makefile
+Makefile.Debug
+Makefile.Release
+
+build/
+*.user
+.qtcreator/
