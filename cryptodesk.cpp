@@ -10,10 +10,7 @@
 #include <QInputDialog>
 
 // Include all cipher headers
-<<<<<<< HEAD
-=======
 #include "historydialog.h"
->>>>>>> master
 #include "caesar.h"
 #include "htmlexporter.h"
 #include "playfair.h"
@@ -26,6 +23,8 @@
 #include "vernam.h"
 #include "transposition.h"
 #include "rsa.h"
+#include "Des.h"
+#include "AES.h"
 #include "customRSA.h"
 #include "dialogutils.h"
 #include "analysisdialog.h"
@@ -44,20 +43,13 @@ CryptoDesk::CryptoDesk(QWidget *parent)
     QWidget *central = new QWidget(this);
     setCentralWidget(central);
 
-<<<<<<< HEAD
-=======
     // ----- Header -----
->>>>>>> master
     QLabel *appTitle = new QLabel("CryptoDesk");
     appTitle->setStyleSheet("font-size: 22px; font-weight: bold; color: white; margin-left: 5px;");
     appTitle->setAlignment(Qt::AlignCenter);
 
     QPushButton *aboutBtn = new QPushButton("About");
     aboutBtn->setCursor(Qt::PointingHandCursor);
-<<<<<<< HEAD
-    aboutBtn->setStyleSheet("background: transparent; color: #17a2b8; font-weight: bold; border: none; font-size: 14px;");
-=======
->>>>>>> master
     aboutBtn->setStyleSheet(
         "QPushButton {"
         "   background-color: transparent;"
@@ -70,9 +62,6 @@ CryptoDesk::CryptoDesk(QWidget *parent)
         "QPushButton:hover {"
         "color: white;"
         "   background-color: #138496;"
-<<<<<<< HEAD
-        "}");
-=======
         "}"
         );
     QPushButton *historyBtn = new QPushButton("History");
@@ -96,56 +85,25 @@ CryptoDesk::CryptoDesk(QWidget *parent)
     });
 
 
->>>>>>> master
     QHBoxLayout *headerLayout = new QHBoxLayout();
     headerLayout->addStretch();
     headerLayout->addWidget(appTitle);
     headerLayout->addStretch();
     headerLayout->addWidget(aboutBtn);
-<<<<<<< HEAD
-
-=======
     headerLayout->addWidget(historyBtn);
 
     // ----- Input Fields -----
->>>>>>> master
     QLabel *labelText = new QLabel("Enter Text:");
     inputText = new QLineEdit();
     inputText->setStyleSheet("padding: 5px;");
 
     QLabel *labelKey = new QLabel("Key a:");
     keyInput = new QLineEdit();
-<<<<<<< HEAD
-    inputText->setStyleSheet("padding: 5px;");
-=======
     keyInput->setStyleSheet("padding: 5px;");
->>>>>>> master
 
     labelKey2 = new QLabel("Key b:");
     keyInput2 = new QLineEdit();
     keyInput2->setPlaceholderText("Second key b for Affine");
-<<<<<<< HEAD
-    inputText->setStyleSheet("padding: 5px;");
-    labelKey2->setVisible(false);
-    keyInput2->setVisible(false);
-
-    QLabel *labelAlgo = new QLabel("Algorithm:");
-    algoCombo = new QComboBox();
-    algoCombo->addItem("Caesar Cipher");
-    algoCombo->addItem("Playfair Cipher");
-    algoCombo->addItem("Hill Cipher (2x2)");
-    algoCombo->addItem("Multiplicative Cipher");
-    algoCombo->addItem("Affine Cipher");
-    algoCombo->addItem("DNA Cipher");
-    algoCombo->addItem("Vigenère Cipher");
-    algoCombo->addItem("Autokey Cipher");
-    algoCombo->addItem("Vernam Cipher");
-    algoCombo->addItem("Rail Fence Cipher");
-    algoCombo->addItem("Columnar Cipher");
-    algoCombo->addItem("Row Transposition Cipher");
-    algoCombo->addItem("RSA Cipher");
-    algoCombo->addItem("Custom RSA Cipher");
-=======
     labelKey2->setVisible(false);
     keyInput2->setVisible(false);
 
@@ -157,9 +115,8 @@ CryptoDesk::CryptoDesk(QWidget *parent)
         "Multiplicative Cipher", "Affine Cipher", "DNA Cipher",
         "Vigenère Cipher", "Autokey Cipher", "Vernam Cipher",
         "Rail Fence Cipher", "Columnar Cipher", "Row Transposition Cipher",
-        "RSA Cipher", "Custom RSA Cipher"
+        "RSA Cipher", "Custom RSA Cipher","DES Cipher","AES Cipher"
     });
->>>>>>> master
     algoCombo->setStyleSheet("margin-bottom: 5px;");
 
     algoInfo = new QLabel("Select an algorithm to see info.");
@@ -180,22 +137,15 @@ CryptoDesk::CryptoDesk(QWidget *parent)
         "}"
         "QPushButton:hover {"
         "   background-color: #138496;"
-<<<<<<< HEAD
-        "}");
-=======
         "}"
         );
 
->>>>>>> master
     QHBoxLayout *algoLayout = new QHBoxLayout();
     algoLayout->addWidget(algoCombo);
     algoLayout->addWidget(helpBtn);
 
-<<<<<<< HEAD
-=======
 
     // ----- Buttons -----
->>>>>>> master
     QPushButton *encryptBtn = new QPushButton("Encrypt");
     QPushButton *decryptBtn = new QPushButton("Decrypt");
     QPushButton *fileBtn = new QPushButton("Encrypt File");
@@ -204,15 +154,8 @@ CryptoDesk::CryptoDesk(QWidget *parent)
 
     publicKeyOutput = new QLineEdit();
     privateKeyOutput = new QLineEdit();
-<<<<<<< HEAD
-
     publicKeyOutput->setReadOnly(true);
     privateKeyOutput->setReadOnly(true);
-
-=======
-    publicKeyOutput->setReadOnly(true);
-    privateKeyOutput->setReadOnly(true);
->>>>>>> master
     publicKeyOutput->setVisible(false);
     privateKeyOutput->setVisible(false);
 
@@ -245,10 +188,7 @@ CryptoDesk::CryptoDesk(QWidget *parent)
     layout->addWidget(labelAlgo);
     layout->addLayout(algoLayout);
     layout->addLayout(btnLayout);
-<<<<<<< HEAD
-=======
 
->>>>>>> master
     labelPub = new QLabel("Public Key (n, e):");
     labelPub->setVisible(false);
     layout->addWidget(labelPub);
@@ -270,13 +210,10 @@ CryptoDesk::CryptoDesk(QWidget *parent)
     addShadow(generateKeyBtn);
     addShadow(clearBtn);
 
-<<<<<<< HEAD
-=======
     // ----- Initialize HistoryDialog -----
     historyDialog = new HistoryDialog(this);
 
     // ----- Connections -----
->>>>>>> master
     connect(encryptBtn, &QPushButton::clicked, this, &CryptoDesk::encryptText);
     connect(decryptBtn, &QPushButton::clicked, this, &CryptoDesk::decryptText);
     connect(fileBtn, &QPushButton::clicked, this, &CryptoDesk::encryptFile);
@@ -311,34 +248,20 @@ CryptoDesk::CryptoDesk(QWidget *parent)
         if (textToAnalyze.isEmpty()) {
             textToAnalyze = inputText->text();
         }
-<<<<<<< HEAD
-
-=======
->>>>>>> master
         if (textToAnalyze.isEmpty()) {
             QMessageBox::warning(this, "Empty", "No text to analyze!");
             return;
         }
-<<<<<<< HEAD
-
-=======
->>>>>>> master
         AnalysisDialog dlg(textToAnalyze, this);
         dlg.exec();
     });
 
     connect(importBtn, &QPushButton::clicked, this, &CryptoDesk::handleLabReport);
-<<<<<<< HEAD
-    updateAlgoInfo();
-}
-
-=======
 
     updateAlgoInfo();
 }
 
 
->>>>>>> master
 void CryptoDesk::updateAlgoInfo() {
     QString algo = algoCombo->currentText();
     importBtn->setVisible(false);
@@ -434,6 +357,12 @@ void CryptoDesk::updateAlgoInfo() {
         keyInput->setPlaceholderText("Enter the the value of p ( e.g.: 7 ) ");
         keyInput2->setPlaceholderText("Enter the the value of q ( e.g.: 11 ) ");
     }
+    else if (algo == "DES Cipher") {
+        algoInfo->setText("DES Cipher: symmetric 64-bit block cipher.");
+        inputText->setPlaceholderText("Enter text (e.g.: Hello World) ");
+        keyInput->setPlaceholderText("Enter a key (e.g.: MySecretKey) ");
+    }
+
 }
 
 bool CryptoDesk::validateInputs() {
@@ -540,12 +469,6 @@ void CryptoDesk::encryptText() {
     QString algo = algoCombo->currentText();
     QString result;
 
-<<<<<<< HEAD
-    if (text.isEmpty()) { QMessageBox::warning(this,"Warning","Please enter text!"); return; }
-
-    if (!validateInputs()) return;
-
-=======
     if (text.isEmpty()) {
         QMessageBox::warning(this, "Warning", "Please enter text!");
         return;
@@ -554,24 +477,10 @@ void CryptoDesk::encryptText() {
     if (!validateInputs()) return;
 
     // ----- تشفير حسب الخوارزمية -----
->>>>>>> master
     if (algo == "Caesar Cipher") result = caesarEncrypt(text, keyInput->text().toInt());
     else if (algo == "Playfair Cipher") result = playfairEncrypt(text, keyInput->text());
     else if (algo == "Multiplicative Cipher") result = multiplicativeEncrypt(text, keyInput->text().toInt());
     else if (algo == "Hill Cipher (2x2)") result = hillEncrypt(text, keyInput->text());
-<<<<<<< HEAD
-    else if (algo == "Affine Cipher") { int a = keyInput->text().toInt(); int b = keyInput2->text().toInt(); result = affineEncrypt(text,a,b);}
-    else if (algo == "DNA Cipher") result = dnaEncrypt(text, keyInput->text());
-    else if (algo == "Vigenère Cipher") result = vigenereEncrypt(text,keyInput->text());
-    else if (algo == "Autokey Cipher") result = autokeyEncrypt(text,keyInput->text());
-    else if (algo == "Vernam Cipher") result = vernamEncrypt(text,keyInput->text());
-    else if (algo == "Rail Fence Cipher") result = railFenceEncrypt(text,keyInput->text().toInt());
-    else if (algo == "Columnar Cipher") {int a = keyInput->text().toInt(); result = columnarEncrypt(text,a);}
-    else if (algo == "Row Transposition Cipher") result = rowTranspositionEncrypt(text,keyInput->text());
-    else if (algo == "RSA Cipher") result = rsaEncrypt(text,keyInput->text(), keyInput2->text());
-    else if (algo == "Custom RSA Cipher") {result = rsaEncryptCustom(text, keyInput->text(), keyInput2->text());}
-    outputText->setPlainText(result);
-=======
     else if (algo == "Affine Cipher") {
         int a = keyInput->text().toInt();
         int b = keyInput2->text().toInt();
@@ -586,7 +495,15 @@ void CryptoDesk::encryptText() {
     else if (algo == "Row Transposition Cipher") result = rowTranspositionEncrypt(text, keyInput->text());
     else if (algo == "RSA Cipher") result = rsaEncrypt(text, keyInput->text(), keyInput2->text());
     else if (algo == "Custom RSA Cipher") result = rsaEncryptCustom(text, keyInput->text(), keyInput2->text());
-
+    else if (algo == "DES Cipher") {
+       // result = rsaEncryptCustom(text, keyInput->text(), keyInput2->text());
+        result= desEncryptText(text,keyInput->text()) ;
+    }
+    else if (algo == "AES Cipher") {
+        // result = rsaEncryptCustom(text, keyInput->text(), keyInput2->text());
+        //result= deEncryptText(text,keyInput->text()) ;
+        result=aesEncryptText(text,keyInput->text()) ;
+    }
     // ----- عرض الناتج -----
     outputText->setPlainText(result);
 
@@ -601,7 +518,6 @@ void CryptoDesk::encryptText() {
 
         historyDialog->addEntry("Encrypted", algo, shortInput, shortResult);
     }
->>>>>>> master
 }
 
 void CryptoDesk::decryptText() {
@@ -609,12 +525,6 @@ void CryptoDesk::decryptText() {
     QString algo = algoCombo->currentText();
     QString result;
 
-<<<<<<< HEAD
-    if (text.isEmpty()) { QMessageBox::warning(this,"Warning","Please enter text!"); return; }
-
-    if (!validateInputs()) return;
-
-=======
     if (text.isEmpty()) {
         QMessageBox::warning(this, "Warning", "Please enter text!");
         return;
@@ -623,32 +533,10 @@ void CryptoDesk::decryptText() {
     if (!validateInputs()) return;
 
     // ----- فك التشفير حسب الخوارزمية -----
->>>>>>> master
     if (algo == "Caesar Cipher") result = caesarDecrypt(text, keyInput->text().toInt());
     else if (algo == "Playfair Cipher") result = playfairDecrypt(text, keyInput->text());
     else if (algo == "Multiplicative Cipher") result = multiplicativeDecrypt(text, keyInput->text().toInt());
     else if (algo == "Hill Cipher (2x2)") result = hillDecrypt(text, keyInput->text());
-<<<<<<< HEAD
-    else if (algo == "Affine Cipher") { int a = keyInput->text().toInt(); int b = keyInput2->text().toInt(); result = affineDecrypt(text,a,b);}
-    else if (algo == "DNA Cipher") result = dnaDecrypt(text, keyInput->text());
-    else if (algo == "Vigenère Cipher") result = vigenereDecrypt(text,keyInput->text());
-    else if (algo == "Autokey Cipher") result = autokeyDecrypt(text,keyInput->text());
-    else if (algo == "Vernam Cipher") result = vernamDecrypt(text,keyInput->text());
-    else if (algo == "Rail Fence Cipher") result = railFenceDecrypt(text,keyInput->text().toInt());
-    else if (algo == "Columnar Cipher") {int a = keyInput->text().toInt(); result = columnarDecrypt(text,a);}
-    else if (algo == "Row Transposition Cipher") result = rowTranspositionDecrypt(text,keyInput->text());
-    else if (algo == "RSA Cipher") result = rsaDecrypt(text,keyInput->text(), keyInput2->text());
-    else if (algo == "Custom RSA Cipher") {result = rsaDecryptCustom(text, keyInput->text(), keyInput2->text());}
-    outputText->setPlainText(result);
-}
-
-void CryptoDesk::encryptFile() {
-    QString fileName = QFileDialog::getOpenFileName(this,"Select file");
-    if(fileName.isEmpty()) return;
-
-    QFile f(fileName);
-    if(!f.open(QIODevice::ReadOnly | QIODevice::Text)) return;
-=======
     else if (algo == "Affine Cipher") {
         int a = keyInput->text().toInt();
         int b = keyInput2->text().toInt();
@@ -663,7 +551,16 @@ void CryptoDesk::encryptFile() {
     else if (algo == "Row Transposition Cipher") result = rowTranspositionDecrypt(text, keyInput->text());
     else if (algo == "RSA Cipher") result = rsaDecrypt(text, keyInput->text(), keyInput2->text());
     else if (algo == "Custom RSA Cipher") result = rsaDecryptCustom(text, keyInput->text(), keyInput2->text());
-
+    else if (algo == "DES Cipher") {
+        // result = rsaEncryptCustom(text, keyInput->text(), keyInput2->text());
+        //= desEncryptText(text,keyInput->text()) ;
+        result=desDecryptText(text,keyInput->text()) ;
+    }
+    else if (algo == "AES Cipher") {
+        // result = rsaEncryptCustom(text, keyInput->text(), keyInput2->text());
+        //result= deEncryptText(text,keyInput->text()) ;
+        result=aesDecryptText(text,keyInput->text()) ;
+    }
     // ----- عرض الناتج -----
     outputText->setPlainText(result);
 
@@ -686,7 +583,6 @@ void CryptoDesk::encryptFile() {
 
     QFile f(fileName);
     if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) return;
->>>>>>> master
     QTextStream in(&f);
     QString content = in.readAll();
     f.close();
@@ -694,29 +590,6 @@ void CryptoDesk::encryptFile() {
     QString algo = algoCombo->currentText();
     QString result;
 
-<<<<<<< HEAD
-    if (algo == "Caesar Cipher") result = caesarEncrypt(content,keyInput->text().toInt());
-    else if (algo == "Playfair Cipher") result = playfairEncrypt(content,keyInput->text());
-    else if (algo == "Multiplicative Cipher") result = multiplicativeEncrypt(content,keyInput->text().toInt());
-    else if (algo == "Hill Cipher (2x2)") result = hillEncrypt(content,keyInput->text());
-    else if (algo == "Affine Cipher") { int a = keyInput->text().toInt(); int b = keyInput2->text().toInt(); result = affineEncrypt(content,a,b);}
-    else if (algo == "DNA Cipher") result = dnaEncrypt(content, keyInput->text());
-    else if (algo == "Vigenère Cipher") result = vigenereEncrypt(content,keyInput->text());
-    else if (algo == "Autokey Cipher") result = autokeyEncrypt(content,keyInput->text());
-    else if (algo == "Vernam Cipher") result = vernamEncrypt(content,keyInput->text());
-    else if (algo == "Rail Fence Cipher") result = railFenceEncrypt(content,keyInput->text().toInt());
-    else if (algo == "Columnar Cipher") {int a = keyInput->text().toInt(); result = columnarEncrypt(content,a);}
-    else if (algo == "Row Transposition Cipher") result = rowTranspositionEncrypt(content,keyInput->text());
-    else if (algo == "RSA Cipher") result = rsaEncrypt(content,keyInput->text(), keyInput2->text());
-    else if (algo == "Custom RSA Cipher") {
-        result = rsaEncryptCustom(content, keyInput->text(), keyInput2->text());
-    }
-    QString save = QFileDialog::getSaveFileName(this,"Save encrypted file");
-    if(save.isEmpty()) return;
-
-    QFile out(save);
-    // out.open(QIODevice::WriteOnly | QIODevice::Text);
-=======
     // ----- تشفير حسب الخوارزمية -----
     if (algo == "Caesar Cipher") result = caesarEncrypt(content, keyInput->text().toInt());
     else if (algo == "Playfair Cipher") result = playfairEncrypt(content, keyInput->text());
@@ -738,7 +611,6 @@ void CryptoDesk::encryptFile() {
     if (save.isEmpty()) return;
 
     QFile out(save);
->>>>>>> master
     if (!out.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QMessageBox::critical(this, "Error", "Cannot create output file!");
         return;
@@ -747,15 +619,11 @@ void CryptoDesk::encryptFile() {
     s << result;
     out.close();
 
-<<<<<<< HEAD
-    QMessageBox::information(this,"Done","File encrypted successfully!");
-=======
     QMessageBox::information(this, "Done", "File encrypted successfully!");
 
     // ----- سجل العملية في History -----
     QString fileShortName = QFileInfo(fileName).fileName();
     historyDialog->addEntry("Encrypted", algo, fileShortName, "Output saved to: " + QFileInfo(save).fileName());
->>>>>>> master
 }
 
 void CryptoDesk::addShadow(QWidget *widget) {
