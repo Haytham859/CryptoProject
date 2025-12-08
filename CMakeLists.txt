@@ -14,7 +14,7 @@ set(SOURCES
     caesar.cpp
     playfair.cpp
     hill.cpp
-       multiplicative.cpp
+    multiplicative.cpp
 )
 
 set(HEADERS
@@ -22,7 +22,7 @@ set(HEADERS
     caesar.h
     playfair.h
     hill.h
-       multiplicative.h
+    multiplicative.h
 )
 
 add_executable(CryptoDesk ${SOURCES} ${HEADERS}
@@ -49,15 +49,16 @@ add_executable(CryptoDesk ${SOURCES} ${HEADERS}
     analysisdialog.h
     analysisdialog.cpp
     htmlexporter.h
-<<<<<<< HEAD
-    htmlexporter.cpp)
-=======
     htmlexporter.cpp
     historyitemwidget.cpp
     historyitemwidget.h
     historydialog.h
-    historydialog.cpp)
->>>>>>> master
+    historydialog.cpp
+    Des.h
+    Des.cpp
+    AES.h
+    AES.cpp
+)
 
 # Link Qt6 libraries
 target_link_libraries(CryptoDesk Qt6::Widgets Qt6::Core Qt6::Gui)
