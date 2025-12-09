@@ -213,6 +213,23 @@ CryptoDesk::CryptoDesk(QWidget *parent)
     btnLayout->addWidget(analyzeBtn);
     btnLayout->addWidget(importBtn);
 
+
+    generateDesKeyBtn = new QPushButton("Generate DES Key");
+    generateDesKeyBtn->setCursor(Qt::PointingHandCursor);
+    generateDesKeyBtn->setVisible(false); // مخفي أول مرة
+    addShadow(generateDesKeyBtn);
+    btnLayout->addWidget(generateDesKeyBtn); // اضفها مرة واحدة فقط
+
+    // ضيف الزر لمكان مناسب في Layout
+
+    // الربط مع الدالة
+    connect(generateDesKeyBtn, &QPushButton::clicked, [=]() {
+        QString desKey = generateDESKey();  // مهم: استدعاء الدالة بالاقواس ()
+        keyInput->setText(desKey);
+        //QMessageBox::information(this, "DES Key Generated", "A random DES key has been generated and filled into the Key field.");
+    });
+
+
     outputText = new QPlainTextEdit();
     outputText->setReadOnly(true);
     outputText->setStyleSheet("margin-top: 5px;");
@@ -300,10 +317,21 @@ CryptoDesk::CryptoDesk(QWidget *parent)
 
     updateAlgoInfo();
 }
+QString CryptoDesk::generateDESKey() {
+    QString key;
+    const QString chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
+    for (int i = 0; i < 8; ++i) {  // مفتاح DES طوله 8 بايت
+        int index = QRandomGenerator::global()->bounded(chars.length());
+        key.append(chars[index]);
+    }
+    return key;
+}
 
 void CryptoDesk::updateAlgoInfo() {
     QString algo = algoCombo->currentText();
+
+    // ---------- Default: Hide optional widgets ----------
     importBtn->setVisible(false);
     keyInput2->setVisible(false);
     labelKey2->setVisible(false);
@@ -314,95 +342,97 @@ void CryptoDesk::updateAlgoInfo() {
     labelPriv->setVisible(false);
     privateKeyOutput->setVisible(false);
 
-    keyInput2->setVisible(false);
-    if (algo == "Caesar Cipher"){
+    generateDesKeyBtn->setVisible(false); // افتراضيا مخفي
+
+    // ---------- Update placeholders and info ----------
+    if (algo == "Caesar Cipher") {
         algoInfo->setText("Caesar Cipher: shift letters by a numeric key.");
-        inputText->setPlaceholderText("Enter a text ( e.g.: Hello ) ");
-        keyInput->setPlaceholderText("Enter Number as a key ( e.g.: 2 ) ");
+        inputText->setPlaceholderText("Enter a text (e.g.: Hello)");
+        keyInput->setPlaceholderText("Enter Number as a key (e.g.: 2)");
     }
-    else if (algo == "Playfair Cipher"){
+    else if (algo == "Playfair Cipher") {
         algoInfo->setText("Playfair Cipher: uses digraphs and a keyword matrix.");
-        inputText->setPlaceholderText("Enter a text ( e.g.: Hello ) ");
-        keyInput->setPlaceholderText("Enter a text as a key ( e.g.: PlayfairExample ) ");
-        }
-    else if (algo == "Hill Cipher (2x2)"){
+        inputText->setPlaceholderText("Enter a text (e.g.: Hello)");
+        keyInput->setPlaceholderText("Enter a text as a key (e.g.: PlayfairExample)");
+    }
+    else if (algo == "Hill Cipher (2x2)") {
         algoInfo->setText("Hill Cipher 2x2: uses 2x2 matrix multiplication.");
-        inputText->setPlaceholderText("Enter a text ( e.g.: Hi ) ");
-        keyInput->setPlaceholderText("Enter 4 letters without any spaces ( e.g.: Test ) ");
+        inputText->setPlaceholderText("Enter a text (e.g.: Hi)");
+        keyInput->setPlaceholderText("Enter 4 letters without any spaces (e.g.: Test)");
     }
-    else if (algo=="Multiplicative Cipher"){
+    else if (algo == "Multiplicative Cipher") {
         algoInfo->setText("Multiplicative Cipher: multiply letters by key modulo 26 (key must be coprime with 26).");
-        inputText->setPlaceholderText("Enter a Text ( e.g.: Hello ) ");
-        keyInput->setPlaceholderText("Enter A Number That Is Coprime With 26 ( e.g.: 3 ) ");
+        inputText->setPlaceholderText("Enter a Text (e.g.: Hello)");
+        keyInput->setPlaceholderText("Enter A Number That Is Coprime With 26 (e.g.: 3)");
     }
-    else if (algo=="Affine Cipher") {
+    else if (algo == "Affine Cipher") {
         algoInfo->setText("Affine Cipher: E(x) = (a*x + b) mod 26, 'a' coprime with 26");
         keyInput2->setVisible(true);
         labelKey2->setVisible(true);
-        inputText->setPlaceholderText("Enter a text ( e.g.: Hello ) ");
-        keyInput->setPlaceholderText("Enter A Number That Is Coprime With 26 ( e.g.: 5 ) ");
-        keyInput2->setPlaceholderText("Enter Number as a key ( e.g.: 8 ) ");
+        inputText->setPlaceholderText("Enter a text (e.g.: Hello)");
+        keyInput->setPlaceholderText("Enter A Number That Is Coprime With 26 (e.g.: 5)");
+        keyInput2->setPlaceholderText("Enter Number as a key (e.g.: 8)");
     }
-    else if (algo == "DNA Cipher"){
+    else if (algo == "DNA Cipher") {
         importBtn->setVisible(true);
         algoInfo->setText("DNA Cipher: encodes text using nucleotide mapping.");
-        inputText->setPlaceholderText("Enter a text ( e.g.: Hello World! ) ");
-        keyInput->setPlaceholderText("Enter a text as a key ( e.g.: My Secret Key ) ");
+        inputText->setPlaceholderText("Enter a text (e.g.: Hello World!)");
+        keyInput->setPlaceholderText("Enter a text as a key (e.g.: My Secret Key)");
     }
-    else if (algo == "Vigenère Cipher"){
+    else if (algo == "Vigenère Cipher") {
         algoInfo->setText("Vigenère Cipher: polyalphabetic cipher using a keyword.");
-        inputText->setPlaceholderText("Enter a text ( e.g.: Lemon ) ");
-        keyInput->setPlaceholderText("Enter Text as a key ( e.g.: Pizza ) ");
+        inputText->setPlaceholderText("Enter a text (e.g.: Lemon)");
+        keyInput->setPlaceholderText("Enter Text as a key (e.g.: Pizza)");
     }
-    else if (algo == "Autokey Cipher"){
+    else if (algo == "Autokey Cipher") {
         algoInfo->setText("Autokey Cipher: extends the key with plaintext.");
-        inputText->setPlaceholderText("Enter a text ( e.g.: HELLO ) ");
-        keyInput->setPlaceholderText("Enter Text as a key ( e.g.: N ) ");
+        inputText->setPlaceholderText("Enter a text (e.g.: HELLO)");
+        keyInput->setPlaceholderText("Enter Text as a key (e.g.: N)");
     }
-    else if (algo == "Vernam Cipher"){
+    else if (algo == "Vernam Cipher") {
         algoInfo->setText("Vernam Cipher: XOR with a one-time pad key.");
-        inputText->setPlaceholderText("Enter a text ( e.g.: HELLO ) ");
-        keyInput->setPlaceholderText("Enter Text as a key ( e.g.: SON ) ");
+        inputText->setPlaceholderText("Enter a text (e.g.: HELLO)");
+        keyInput->setPlaceholderText("Enter Text as a key (e.g.: SON)");
     }
-    else if (algo == "Rail Fence Cipher"){
+    else if (algo == "Rail Fence Cipher") {
         algoInfo->setText("Rail Fence Cipher: transposition using zigzag pattern.");
-        inputText->setPlaceholderText("Enter a text ( e.g.: Meet Me After The Party ) ");
-        keyInput->setPlaceholderText("Enter a Number as a key ( e.g.: 2 ) ");
+        inputText->setPlaceholderText("Enter a text (e.g.: Meet Me After The Party)");
+        keyInput->setPlaceholderText("Enter a Number as a key (e.g.: 2)");
     }
-    else if (algo == "Columnar Cipher"){
+    else if (algo == "Columnar Cipher") {
         algoInfo->setText("Columnar Cipher: text arranged in columns based on key.");
-        inputText->setPlaceholderText("Enter a text ( e.g.: Meet Me After The Party ) ");
-        keyInput->setPlaceholderText("Enter Number of columns as a key ( e.g.: 3 ) ");
+        inputText->setPlaceholderText("Enter a text (e.g.: Meet Me After The Party)");
+        keyInput->setPlaceholderText("Enter Number of columns as a key (e.g.: 3)");
     }
-    else if (algo == "Row Transposition Cipher"){
+    else if (algo == "Row Transposition Cipher") {
         algoInfo->setText("Row Transposition Cipher: permutes rows according to key.");
-        inputText->setPlaceholderText("Enter a text ( e.g.: attack postponed until two am ) ");
-        keyInput->setPlaceholderText("Enter numbers according to the desired array order ( e.g.: 412367 ) ");
+        inputText->setPlaceholderText("Enter a text (e.g.: attack postponed until two am)");
+        keyInput->setPlaceholderText("Enter numbers according to the desired array order (e.g.: 412367)");
     }
-    else if (algo == "RSA Cipher"){
+    else if (algo == "RSA Cipher") {
         algoInfo->setText("RSA Cipher: asymmetric encryption using public/private keys.");
-        inputText->setPlaceholderText("Enter a Text ( e.g.: Hello ) ");
-        keyInput->setPlaceholderText("Enter a key with n , e  ( e.g.: (33,7) ) ");
+        inputText->setPlaceholderText("Enter a Text (e.g.: Hello)");
+        keyInput->setPlaceholderText("Enter a key with n, e (e.g.: (33,7))");
         generateKeyBtn->setVisible(true);
         labelPub->setVisible(true);
         publicKeyOutput->setVisible(true);
         labelPriv->setVisible(true);
         privateKeyOutput->setVisible(true);
     }
-    else if (algo == "Custom RSA Cipher"){
-        algoInfo->setText("RSA Cipher: asymmetric encryption using p and q .");
+    else if (algo == "Custom RSA Cipher") {
+        algoInfo->setText("RSA Cipher: asymmetric encryption using p and q.");
         keyInput2->setVisible(true);
         labelKey2->setVisible(true);
-        inputText->setPlaceholderText("Enter a Text ( e.g.: Hello ) ");
-        keyInput->setPlaceholderText("Enter the the value of p ( e.g.: 7 ) ");
-        keyInput2->setPlaceholderText("Enter the the value of q ( e.g.: 11 ) ");
+        inputText->setPlaceholderText("Enter a Text (e.g.: Hello)");
+        keyInput->setPlaceholderText("Enter the value of p (e.g.: 7)");
+        keyInput2->setPlaceholderText("Enter the value of q (e.g.: 11)");
     }
     else if (algo == "DES Cipher") {
         algoInfo->setText("DES Cipher: symmetric 64-bit block cipher.");
-        inputText->setPlaceholderText("Enter text (e.g.: Hello World) ");
-        keyInput->setPlaceholderText("Enter a key (e.g.: MySecretKey) ");
+        inputText->setPlaceholderText("Enter text (e.g.: Hello World)");
+        keyInput->setPlaceholderText("Enter a key (e.g.: MySecretKey)");
+        generateDesKeyBtn->setVisible(true); // يظهر فقط في DES
     }
-
 }
 
 bool CryptoDesk::validateInputs() {

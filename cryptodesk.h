@@ -37,6 +37,9 @@ private:
     QLabel *algoInfo;
     QLabel *labelKey2;
     QPushButton *generateKeyBtn;
+    QPushButton *generateDesKeyBtn;
+    QString generateDESKey();
+
 
     QLabel *labelPub;
     QLineEdit *publicKeyOutput;

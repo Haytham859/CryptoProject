@@ -2,7 +2,10 @@
 #define DES_H
 #include <QString>
 
-QString desEncryptText(const QString &plainText, const QString &keyText);
-QString desDecryptText(const QString &cipherHex, const QString &keyText);
+QString desEncryptText(const QString &plainText, const QString &keyHex);
+QString desDecryptText(const QString &cipherHex, const QString &keyHex);
+
+// توليد مفتاح DES عشوائي بصيغة HEX
+QString generateDESKeyHex();
 
 #endif // DES_H

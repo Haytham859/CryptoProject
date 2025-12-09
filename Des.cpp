@@ -2,27 +2,55 @@
 #include <QString>
 #include <QByteArray>
 #include <QCryptographicHash>
+#include <QRandomGenerator>
 #include <vector>
+#include <cstdint>
 
-// ===================== Key From Text =======================
-static uint64_t keyFromText(const QString &keyText) {
-    QByteArray hash = QCryptographicHash::hash(keyText.toUtf8(),
-                                               QCryptographicHash::Sha256);
-    uint64_t k = 0;
+// ===================== Odd Parity Helper ===================
+static uint8_t setOddParity(uint8_t b) {
+    int ones = 0;
+    for (int i = 1; i < 8; ++i) {
+        if ((b >> i) & 1) ones++;
+    }
+    if ((ones % 2) == 0) b |= 0x01;
+    else b &= 0xFE;
+    return b;
+}
+
+// توليد 8 بايت مفتاح DES مع odd parity
+static QByteArray generateDESKeyBytes() {
+    QByteArray k;
+    k.reserve(8);
     for (int i = 0; i < 8; i++) {
-        k = (k << 8) | (unsigned char)hash[i];
+        uint8_t b = QRandomGenerator::global()->generate() & 0xFF;
+        b = setOddParity(b);
+        k.append(char(b));
     }
     return k;
+}
+
+// توليد مفتاح DES بصيغة HEX لعرضه للمستخدم
+QString generateDESKeyHex() {
+    return generateDESKeyBytes().toHex().toUpper();
+}
+
+// تحويل HEX → uint64
+static uint64_t keyFromHex(const QString &hex) {
+    QByteArray k = QByteArray::fromHex(hex.toUtf8());
+    if (k.size() != 8) return 0;
+
+    uint64_t v = 0;
+    for (int i = 0; i < 8; i++)
+        v = (v << 8) | (unsigned char)k[i];
+    return v;
 }
 
 // ===================== Padding ============================
 static QByteArray addPadding(QByteArray data) {
     int pad = 8 - (data.size() % 8);
-    for (int i = 0; i < pad; i++)
-        data.append(char(pad));
+    for (int i = 0; i < pad; i++) data.append(char(pad));
     return data;
 }
-
 static QByteArray removePadding(QByteArray data) {
     if (data.isEmpty()) return data;
     int pad = (unsigned char)data.back();
@@ -31,18 +59,17 @@ static QByteArray removePadding(QByteArray data) {
     return data;
 }
 
-// ===================== Block helpers ======================
+// ===================== Block Conversions ===================
 static uint64_t bytesToBlock(const QByteArray &b) {
     uint64_t x = 0;
     for (int i = 0; i < 8; i++)
         x = (x << 8) | (unsigned char)b[i];
     return x;
 }
-
 static QByteArray blockToBytes(uint64_t x) {
     QByteArray b;
     for (int i = 7; i >= 0; i--)
-        b.append(char((x >> (i * 8)) & 0xFF));
+        b.append(char((x >> (i*8)) & 0xFF));
     return b;
 }
 
@@ -50,72 +77,58 @@ static QByteArray blockToBytes(uint64_t x) {
 static int getBit(uint64_t val, int pos, int totalBits) {
     return (val >> (totalBits - pos)) & 1ULL;
 }
-
 static void setBit(uint64_t &val, int pos, int bit, int totalBits) {
     if (bit)
         val |= (1ULL << (totalBits - pos));
     else
         val &= ~(1ULL << (totalBits - pos));
 }
-
-static uint64_t permute(uint64_t input,
-                        const int *table,
-                        int inBits,
-                        int outBits)
-{
-    uint64_t out = 0;
+static uint64_t permute(uint64_t in,const int *tb,int inBits,int outBits) {
+    uint64_t o = 0;
     for (int i = 0; i < outBits; i++) {
-        int src = table[i];
-        int b = getBit(input, src, inBits);
-        setBit(out, i+1, b, outBits);
+        int src = tb[i];
+        int b = getBit(in, src, inBits);
+        setBit(o, i+1, b, outBits);
     }
-    return out;
+    return o;
 }
 
-// ===================== DES TABLES =========================
+// ===================== DES Tables =========================
 static const int IP[64] = {
     58,50,42,34,26,18,10,2, 60,52,44,36,28,20,12,4,
     62,54,46,38,30,22,14,6, 64,56,48,40,32,24,16,8,
     57,49,41,33,25,17,9,1,  59,51,43,35,27,19,11,3,
     61,53,45,37,29,21,13,5, 63,55,47,39,31,23,15,7
 };
-
 static const int FP[64] = {
-    40,8,48,16,56,24,64,32, 39,7,47,15,55,23,63,31,
-    38,6,46,14,54,22,62,30, 37,5,45,13,53,21,61,29,
-    36,4,44,12,52,20,60,28, 35,3,43,11,51,19,59,27,
-    34,2,42,10,50,18,58,26, 33,1,41,9,49,17,57,25
+    40,8,48,16,56,24,64,32,39,7,47,15,55,23,63,31,
+    38,6,46,14,54,22,62,30,37,5,45,13,53,21,61,29,
+    36,4,44,12,52,20,60,28,35,3,43,11,51,19,59,27,
+    34,2,42,10,50,18,58,26,33,1,41,9,49,17,57,25
 };
-
 static const int E[48] = {
-    32,1,2,3,4,5, 4,5,6,7,8,9,
-    8,9,10,11,12,13, 12,13,14,15,16,17,
-    16,17,18,19,20,21, 20,21,22,23,24,25,
-    24,25,26,27,28,29, 28,29,30,31,32,1
+    32,1,2,3,4,5,4,5,6,7,8,9,8,9,10,11,12,13,
+    12,13,14,15,16,17,16,17,18,19,20,21,20,21,22,23,24,25,
+    24,25,26,27,28,29,28,29,30,31,32,1
 };
-
 static const int P[32] = {
-    16,7,20,21, 29,12,28,17, 1,15,23,26,
-    5,18,31,10, 2,8,24,14, 32,27,3,9,
-    19,13,30,6, 22,11,4,25
+    16,7,20,21,29,12,28,17,1,15,23,26,5,18,31,10,
+    2,8,24,14,32,27,3,9,19,13,30,6,22,11,4,25
 };
-
 static const int PC1[56] = {
-    57,49,41,33,25,17,9, 1,58,50,42,34,26,18,
-    10,2,59,51,43,35,27, 19,11,3,60,52,44,36,
-    63,55,47,39,31,23,15, 7,62,54,46,38,30,22,
-    14,6,61,53,45,37,29, 21,13,5,28,20,12,4
+    57,49,41,33,25,17,9,1,58,50,42,34,26,18,
+    10,2,59,51,43,35,27,19,11,3,60,52,44,36,
+    63,55,47,39,31,23,15,7,62,54,46,38,30,22,
+    14,6,61,53,45,37,29,21,13,5,28,20,12,4
 };
-
 static const int PC2[48] = {
-    14,17,11,24,1,5, 3,28,15,6,21,10,
-    23,19,12,4,26,8, 16,7,27,20,13,2,
-    41,52,31,37,47,55, 30,40,51,45,33,48,
-    44,49,39,56,34,53, 46,42,50,36,29,32
+    14,17,11,24,1,5,3,28,15,6,21,10,
+    23,19,12,4,26,8,16,7,27,20,13,2,
+    41,52,31,37,47,55,30,40,51,45,33,48,
+    44,49,39,56,34,53,46,42,50,36,29,32
 };
-
 static const int SHIFTS[16] = {
-    1,1,2,2,2,2,2,2, 1,2,2,2,2,2,2,1
+    1,1,2,2,2,2,2,2,1,2,2,2,2,2,2,1
 };
 
 // S-boxes
@@ -170,46 +183,44 @@ static const int SBOX[8][4][16] = {
     }
 };
 
-// ===================== FEISTEL FUNCTION ====================
-static uint32_t feistel(uint32_t R, uint64_t subkey)
-{
+// ===================== Feistel =============================
+static uint32_t feistel(uint32_t R, uint64_t sk) {
     uint64_t ER = permute(R, E, 32, 48);
-    uint64_t x = ER ^ subkey;
+    uint64_t x = ER ^ sk;
+    uint32_t out = 0;
 
-    uint32_t out32 = 0;
     for (int i = 0; i < 8; i++) {
         int shift = (7 - i) * 6;
         int six = (x >> shift) & 0x3F;
-        int row = ((six & 0x20) >> 4) | (six & 0x1);
+        int row = ((six & 0x20) >> 4) | (six & 1);
         int col = (six >> 1) & 0xF;
-        int val = SBOX[i][row][col];
-        out32 = (out32 << 4) | val;
+        int s = SBOX[i][row][col];
+        out = (out << 4) | s;
     }
-    return permute(out32, P, 32, 32);
+    return permute(out, P, 32, 32);
 }
 
-// ===================== SUBKEYS =============================
+// ===================== Subkeys =============================
 static std::vector<uint64_t> generateKeys(uint64_t key64) {
     uint64_t key56 = permute(key64, PC1, 64, 56);
     uint32_t C = (key56 >> 28) & 0xFFFFFFF;
     uint32_t D = key56 & 0xFFFFFFF;
 
-    std::vector<uint64_t> keys(16);
+    std::vector<uint64_t> out(16);
     for (int i = 0; i < 16; i++) {
         C = ((C << SHIFTS[i]) | (C >> (28 - SHIFTS[i]))) & 0xFFFFFFF;
         D = ((D << SHIFTS[i]) | (D >> (28 - SHIFTS[i]))) & 0xFFFFFFF;
-
         uint64_t CD = ((uint64_t)C << 28) | D;
-        keys[i] = permute(CD, PC2, 56, 48);
+        out[i] = permute(CD, PC2, 56, 48);
     }
-    return keys;
+    return out;
 }
 
-// ===================== DES CORE ============================
+// ===================== DES Core ============================
 static uint64_t desCore(uint64_t block, uint64_t key, bool enc) {
     auto keys = generateKeys(key);
-
     uint64_t ip = permute(block, IP, 64, 64);
+
     uint32_t L = ip >> 32;
     uint32_t R = ip & 0xFFFFFFFF;
 
@@ -224,57 +235,37 @@ static uint64_t desCore(uint64_t block, uint64_t key, bool enc) {
     return permute(pre, FP, 64, 64);
 }
 
-// ===================== API ================================
+// ===================== Encrypt =============================
 QString desEncryptText(const QString &plainText,
-                       const QString &keyText)
+                       const QString &keyHex)
 {
     QByteArray data = plainText.toUtf8();
     data = addPadding(data);
 
-    uint64_t key = keyFromText(keyText);
-    QByteArray output;
+    uint64_t key = keyFromHex(keyHex);
+    QByteArray out;
 
     for (int i = 0; i < data.size(); i += 8) {
-        QByteArray block = data.mid(i, 8);
-        uint64_t p = bytesToBlock(block);
+        uint64_t p = bytesToBlock(data.mid(i, 8));
         uint64_t c = desCore(p, key, true);
-        output.append(blockToBytes(c));
+        out.append(blockToBytes(c));
     }
-
-    return output.toHex().toUpper();
+    return out.toHex().toUpper();
 }
 
+// ===================== Decrypt =============================
 QString desDecryptText(const QString &cipherHex,
-                       const QString &keyText)
+                       const QString &keyHex)
 {
     QByteArray data = QByteArray::fromHex(cipherHex.toUtf8());
-    uint64_t key = keyFromText(keyText);
-
-    QByteArray output;
+    uint64_t key = keyFromHex(keyHex);
+    QByteArray out;
 
     for (int i = 0; i < data.size(); i += 8) {
-        QByteArray block = data.mid(i, 8);
-        uint64_t c = bytesToBlock(block);
+        uint64_t c = bytesToBlock(data.mid(i, 8));
         uint64_t p = desCore(c, key, false);
-        output.append(blockToBytes(p));
+        out.append(blockToBytes(p));
     }
 
-    return QString::fromUtf8(removePadding(output));
-}
-
-// ===================== Wrapper Function ====================
-QString desProcess(const QString &input, const QString &keyText, bool enc) {
-    if (enc) {
-        return desEncryptText(input, keyText);
-    } else {
-        return desDecryptText(input, keyText);
-    }
-}
-
-QString encryptDES(const QString &plainText, const QString &keyText) {
-    return desProcess(plainText, keyText, true);
-}
-
-QString decryptDES(const QString &cipherHex, const QString &keyText) {
-    return desProcess(cipherHex, keyText, false);
+    return QString::fromUtf8(removePadding(out));
 }
