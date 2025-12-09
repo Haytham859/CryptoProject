@@ -221,16 +221,6 @@ void DialogUtils::showAbout(QWidget *parent) {
                        "<p>A comprehensive tool for learning and applying encryption algorithms.</p>"
                        "<p><b>Developed by:</b></p>"
                        "<ul>"
-                       "<li>Haytham</li>"
-                       "<li>Mariam</li>"
-                       "<li>Hany</li>"
-                       "<li>Omar hany</li>"
-                       "<li>Omar gamal</li>"
-                       "<li>Ahmed elshenawy</li>"
-                       "<li>Ibrahim</li>"
-                       "<li>Ziad</li>"
-                       "<li>Youssef<li>"
-                       "<li>mohamed</li>" // Team Members
                        "</ul>"
                        "<p><i>© 2025 Faculty of Science, CS Department</i></p>");
 }
