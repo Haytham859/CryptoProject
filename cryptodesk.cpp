@@ -66,7 +66,7 @@ CryptoDesk::CryptoDesk(QWidget *parent)
     QLabel *appTitle = new QLabel("Crypto Desktop");
     appTitle->setStyleSheet("font-size: 22px; font-weight: bold; color: white; margin-left: 40px;");
     appTitle->setAlignment(Qt::AlignCenter);
-
+    
     QPushButton *aboutBtn = new QPushButton("About");
     aboutBtn->setCursor(Qt::PointingHandCursor);
     aboutBtn->setStyleSheet(
@@ -105,7 +105,7 @@ CryptoDesk::CryptoDesk(QWidget *parent)
 
 
 
-    // ----- Dark/Light Theme Button -----
+        // ----- Dark/Light Theme Button -----
     QPushButton *themeBtn = new QPushButton("🌙");
     themeBtn->setCursor(Qt::PointingHandCursor);
     themeBtn->setStyleSheet(
@@ -131,7 +131,7 @@ CryptoDesk::CryptoDesk(QWidget *parent)
         QSettings settings("MyCompany", "CryptoDesk"); // حفظ الثيم باستخدام QSettings
         settings.setValue("isDarkTheme", isDark);
     });
-
+    
     QHBoxLayout *headerLayout = new QHBoxLayout();
     headerLayout->addStretch();
     headerLayout->addStretch();
@@ -324,7 +324,7 @@ void CryptoDesk::updateAlgoInfo() {
         algoInfo->setText("Playfair Cipher: uses digraphs and a keyword matrix.");
         inputText->setPlaceholderText("Enter a text ( e.g.: Hello ) ");
         keyInput->setPlaceholderText("Enter a text as a key ( e.g.: PlayfairExample ) ");
-    }
+        }
     else if (algo == "Hill Cipher (2x2)"){
         algoInfo->setText("Hill Cipher 2x2: uses 2x2 matrix multiplication.");
         inputText->setPlaceholderText("Enter a text ( e.g.: Hi ) ");
@@ -421,6 +421,22 @@ bool CryptoDesk::validateInputs() {
 
     QRegularExpression isNumber("^[0-9]+$");
     QRegularExpression isText("^[a-zA-Z]+$");
+    QRegularExpression isHex("^[0-9A-Fa-f]+$");  // <-- اضف ده
+
+    // التحقق للـ AES
+    if (algo == "AES Cipher") {
+        // فقط تحقق من إن المفتاح والنص مش فاضي
+        if (key1.isEmpty()) {
+            QMessageBox::warning(this, "Input Error", "Key cannot be empty!");
+            return false;
+        }
+        if (inputText->text().isEmpty()) {
+            QMessageBox::warning(this, "Input Error", "Text cannot be empty!");
+            return false;
+        }
+    }
+
+
 
     // =========================================================
     // المجموعة الأولى: خوارزميات تحتاج أرقام فقط (Integer Keys)
@@ -536,7 +552,7 @@ void CryptoDesk::encryptText() {
     else if (algo == "RSA Cipher") result = rsaEncrypt(text, keyInput->text(), keyInput2->text());
     else if (algo == "Custom RSA Cipher") result = rsaEncryptCustom(text, keyInput->text(), keyInput2->text());
     else if (algo == "DES Cipher") {
-        // result = rsaEncryptCustom(text, keyInput->text(), keyInput2->text());
+       // result = rsaEncryptCustom(text, keyInput->text(), keyInput2->text());
         result= desEncryptText(text,keyInput->text()) ;
     }
     else if (algo == "AES Cipher") {
