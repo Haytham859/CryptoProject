@@ -202,16 +202,16 @@ static QByteArray removePadding(const QByteArray &data) {
 
 // ----------------- Key derivation from text -----------------
 static void keyFromText(const QString &keyText, unsigned char keyOut[16]) {
-    QByteArray h = QCryptographicHash::hash(keyText.toUtf8(), QCryptographicHash::Sha256);
-    QByteArray k = h.left(16);
-    memcpy(keyOut, reinterpret_cast<const unsigned char*>(k.constData()), 16);
+    QByteArray hash = QCryptographicHash::hash(keyText.toUtf8(), QCryptographicHash::Md5); // 16 بايت
+    memcpy(keyOut, hash.constData(), 16);
 }
+
+
 
 // ----------------- Public API -----------------
 QString aesEncryptText(const QString &plainText, const QString &keyText) {
-    // derive key
     unsigned char key[16];
-    keyFromText(keyText, key);
+    keyFromText(keyText, key); // هنا بناخد المفتاح من نص عادي
 
     unsigned char roundKey[176];
     KeyExpansion(key, roundKey);
@@ -226,16 +226,28 @@ QString aesEncryptText(const QString &plainText, const QString &keyText) {
         encryptBlock(inb, outb, roundKey);
         memcpy(reinterpret_cast<unsigned char*>(out.data())+i, outb, 16);
     }
-    QString hex = out.toHex().toUpper();
-    return hex;
-}
 
-QString aesDecryptText(const QString &cipherHex, const QString &keyText) {
-    QByteArray cipher = QByteArray::fromHex(cipherHex.toUtf8());
-    if (cipher.isEmpty()) return QString();
+    // تحويل كل بايت لسلسلة 0 و 1
+    QString binStr;
+    for (auto c : out) {
+        binStr += QString("%1").arg(static_cast<unsigned char>(c), 8, 2, QChar('0'));
+    }
+    return binStr;
+}
+QString aesDecryptText(const QString &cipherBin, const QString &keyText) {
+    // تحويل الـ binary string لـ QByteArray
+    QByteArray cipher;
+    if(cipherBin.size() % 8 != 0) return QString(); // invalid
+    for(int i=0;i<cipherBin.size();i+=8){
+        bool ok;
+        char byte = static_cast<char>(cipherBin.mid(i,8).toUInt(&ok,2));
+        if(!ok) return QString();
+        cipher.append(byte);
+    }
 
     unsigned char key[16];
-    keyFromText(keyText, key);
+    keyFromText(keyText, key); // استخدم نفس الطريقة هنا
+
     unsigned char roundKey[176];
     KeyExpansion(key, roundKey);
 
