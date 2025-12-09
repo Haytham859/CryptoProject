@@ -161,7 +161,6 @@ CryptoDesk::CryptoDesk(QWidget *parent)
     QLabel *labelAlgo = new QLabel("Algorithm:");
     algoCombo = new QComboBox();
     algoCombo->addItems({
-        "Select an algorithm",
         "Caesar Cipher", "Playfair Cipher", "Hill Cipher (2x2)",
         "Multiplicative Cipher", "Affine Cipher", "DNA Cipher",
         "Vigenère Cipher", "Autokey Cipher", "Vernam Cipher",
