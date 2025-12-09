@@ -165,7 +165,7 @@ CryptoDesk::CryptoDesk(QWidget *parent)
         "Multiplicative Cipher", "Affine Cipher", "DNA Cipher",
         "Vigenère Cipher", "Autokey Cipher", "Vernam Cipher",
         "Rail Fence Cipher", "Columnar Cipher", "Row Transposition Cipher",
-        "RSA Cipher", "Custom RSA Cipher"
+        "RSA Cipher", "Custom RSA Cipher","DES Cipher","AES Cipher"
     });
     algoCombo->setStyleSheet("margin-bottom: 5px;");
 
