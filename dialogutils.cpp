@@ -210,6 +210,32 @@ void DialogUtils::showAlgorithmHelp(QWidget *parent, const QString &algoName) {
                "</div>";
     }
 
+    else if (algoName == "AES Cipher") {
+        desc = "<h3>AES-128 (Rijndael)</h3>"
+               "<p><b>Logic:</b> Symmetric block cipher. Processes data in 128-bit blocks using substitution & permutation rounds.</p>"
+               "<p><b>Process:</b> 10 Rounds of: SubBytes, ShiftRows, MixColumns, and AddRoundKey.</p>"
+               "<hr>"
+               "<p><b>[Key Requirement]</b> Any text (internally hashed to 128-bit key).</p>"
+               + exampleStyle +
+               "<b>Example:</b> Key = <code>secret</code><br><br>"
+               "<b>Encrypt:</b> Input: <code>Hello</code> -> Result: <code>4D6556CC4181997086B70D3C67EADCC9</code><br>"
+               "<b>Decrypt:</b> Input: <code>4D6556CC4181997086B70D3C67EADCC9</code> -> Result: <code>Hello</code>"
+               "</div>";
+    }
+
+    else if (algoName == "DES Cipher") {
+        desc = "<h3>DES (Data Encryption Standard)</h3>"
+               "<p><b>Logic:</b> Symmetric Feistel cipher. Older standard processing 64-bit blocks in 16 rounds.</p>"
+               "<p><b>Structure:</b> Splits block into Left & Right halves. Uses Sub-keys and S-Boxes.</p>"
+               "<hr>"
+               "<p><b>[Key Requirement]</b> Any text (internally hashed to 56-bit effective key).</p>"
+               + exampleStyle +
+               "<b>Example:</b> Key = <code>secret</code><br><br>"
+               "<b>Encrypt:</b> Input: <code>Hello</code> -> Result: <code>8993150E58607C62</code><br>"
+               "<b>Decrypt:</b> Input: <code>8993150E58607C62</code> -> Result: <code>Hello</code>"
+               "</div>";
+    }
+
     if (!desc.isEmpty()) {
         QMessageBox::about(parent, title, desc);
     }
@@ -221,6 +247,16 @@ void DialogUtils::showAbout(QWidget *parent) {
                        "<p>A comprehensive tool for learning and applying encryption algorithms.</p>"
                        "<p><b>Developed by:</b></p>"
                        "<ul>"
+                       "<li>Haytham Hossam</li>"
+                       "<li>Hany Mamdouh</li>"
+                       "<li>Mariam Hussein</li>"
+                       "<li>Omar Hany</li>"
+                       "<li>Ibrahim Nour Eldeen</li>"
+                       "<li>Youssef Elsayed<li>"
+                       "<li>Mohamed Elsaid</li>"
+                       "<li>Omar Gamal</li>"
+                       "<li>Ahmed Abd-Elrahman</li>"
+                       "<li>Ziad Mohamed</li>"
                        "</ul>"
                        "<p><i>© 2025 Faculty of Science, CS Department</i></p>");
 }

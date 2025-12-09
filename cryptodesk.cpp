@@ -592,13 +592,9 @@ void CryptoDesk::decryptText() {
     else if (algo == "RSA Cipher") result = rsaDecrypt(text, keyInput->text(), keyInput2->text());
     else if (algo == "Custom RSA Cipher") result = rsaDecryptCustom(text, keyInput->text(), keyInput2->text());
     else if (algo == "DES Cipher") {
-        // result = rsaEncryptCustom(text, keyInput->text(), keyInput2->text());
-        //= desEncryptText(text,keyInput->text()) ;
         result=desDecryptText(text,keyInput->text()) ;
     }
     else if (algo == "AES Cipher") {
-        // result = rsaEncryptCustom(text, keyInput->text(), keyInput2->text());
-        //result= deEncryptText(text,keyInput->text()) ;
         result=aesDecryptText(text,keyInput->text()) ;
     }
     // ----- عرض الناتج -----
