@@ -225,12 +225,14 @@ void DialogUtils::showAlgorithmHelp(QWidget *parent, const QString &algoName) {
 
     else if (algoName == "DES Cipher") {
         desc = "<h3>DES (Data Encryption Standard)</h3>"
-               "<p><b>Logic:</b> Symmetric Feistel cipher. Older standard processing 64-bit blocks in 16 rounds.</p>"
-               "<p><b>Structure:</b> Splits block into Left & Right halves. Uses Sub-keys and S-Boxes.</p>"
+               "<p><b>Logic:</b> Symmetric Feistel network. Encrypts 64-bit blocks using 16 rounds of complex substitution (S-Boxes) and permutation.</p>"
+               "<p><b>Process:</b> Initial Permutation (IP) &rarr; 16 Rounds &rarr; Final Permutation (FP).</p>"
                "<hr>"
-               "<p><b>[Key Requirement]</b> Any text (internally hashed to 56-bit effective key).</p>"
+               "<p><b>[Key Requirement]</b> 16 Hex characters (64-bit).<br>"
+               "<i>(Use the 'Generate Key' button to get a valid parity-adjusted key).</i></p>"
                + exampleStyle +
-               "<b>Example:</b> Key = <code>secret</code><br><br>"
+               "<b>Example:</b><br>"
+               "Key: <code>Auto-Generated (e.g., 14A2...)</code><br><br>"
                "<b>Encrypt:</b> Input: <code>Hello</code> -> Result: <code>8993150E58607C62</code><br>"
                "<b>Decrypt:</b> Input: <code>8993150E58607C62</code> -> Result: <code>Hello</code>"
                "</div>";
