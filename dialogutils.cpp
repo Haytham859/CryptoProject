@@ -211,29 +211,30 @@ void DialogUtils::showAlgorithmHelp(QWidget *parent, const QString &algoName) {
     }
 
     else if (algoName == "AES Cipher") {
-        desc = "<h3>AES-128 (Rijndael)</h3>"
-               "<p><b>Logic:</b> Symmetric block cipher. Processes data in 128-bit blocks using substitution & permutation rounds.</p>"
-               "<p><b>Process:</b> 10 Rounds of: SubBytes, ShiftRows, MixColumns, and AddRoundKey.</p>"
+        desc = "<h3>AES-128 Cipher</h3>"
+               "<p><b>Logic:</b> Symmetric block cipher. Encrypts data in 128-bit blocks using 10 rounds of substitution & permutation (SPN Network).</p>"
+               "<p><b>Key Processing:</b> Your key text is hashed using MD5 to create a fixed 128-bit key.</p>"
                "<hr>"
-               "<p><b>[Key Requirement]</b> Any text (internally hashed to 128-bit key).</p>"
+               "<p><b>[Key Requirement]</b> Any text string.</p>"
                + exampleStyle +
                "<b>Example:</b> Key = <code>secret</code><br><br>"
-               "<b>Encrypt:</b> Input: <code>Hello</code> -> Result: <code>4D6556CC4181997086B70D3C67EADCC9</code><br>"
-               "<b>Decrypt:</b> Input: <code>4D6556CC4181997086B70D3C67EADCC9</code> -> Result: <code>Hello</code>"
+               "<b>Encrypt:</b> Input: <code>Hello</code><br>"
+               "<b>Result:</b> <code>101101001...</code> (Output is in Binary format)<br>"
+               "<b>Decrypt:</b> Input: <code>101101001...</code> -> Result: <code>Hello</code>"
                "</div>";
     }
 
     else if (algoName == "DES Cipher") {
         desc = "<h3>DES (Data Encryption Standard)</h3>"
-               "<p><b>Logic:</b> Symmetric Feistel network. Encrypts 64-bit blocks using 16 rounds of complex substitution (S-Boxes) and permutation.</p>"
-               "<p><b>Process:</b> Initial Permutation (IP) &rarr; 16 Rounds &rarr; Final Permutation (FP).</p>"
+               "<p><b>Logic:</b> Symmetric Feistel Cipher. Encrypts 64-bit blocks using 16 rounds of substitution (S-Boxes) and permutation.</p>"
+               "<p><b>Structure:</b> Initial Permutation (IP) &rarr; 16 Rounds &rarr; Final Permutation (FP).</p>"
                "<hr>"
-               "<p><b>[Key Requirement]</b> 16 Hex characters (64-bit).<br>"
-               "<i>(Use the 'Generate Key' button to get a valid parity-adjusted key).</i></p>"
+               "<p><b>[Key Requirement]</b> 16 Hexadecimal characters (64-bit).</p>"
+               "<p><i>(Recommended: Use the 'Generate Key' button to get a valid key with correct parity).</i></p>"
                + exampleStyle +
                "<b>Example:</b><br>"
-               "Key: <code>Auto-Generated (e.g., 14A2...)</code><br><br>"
-               "<b>Encrypt:</b> Input: <code>Hello</code> -> Result: <code>8993150E58607C62</code><br>"
+               "Key: <code>1A2B3C4D5E6F7080</code> (Auto-Generated)<br><br>"
+               "<b>Encrypt:</b> Input: <code>Hello</code> -> Result: <code>8993150E58607C62</code> (Hex)<br>"
                "<b>Decrypt:</b> Input: <code>8993150E58607C62</code> -> Result: <code>Hello</code>"
                "</div>";
     }
@@ -250,8 +251,8 @@ void DialogUtils::showAbout(QWidget *parent) {
                        "<p><b>Developed by:</b></p>"
                        "<ul>"
                        "<li>Haytham Hossam</li>"
-                       "<li>Hany Mamdouh</li>"
                        "<li>Mariam Hussein</li>"
+                       "<li>Hany Mamdouh</li>"
                        "<li>Omar Hany</li>"
                        "<li>Ibrahim Nour Eldeen</li>"
                        "<li>Youssef Elsayed<li>"
