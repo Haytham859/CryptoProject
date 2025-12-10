@@ -213,6 +213,20 @@ CryptoDesk::CryptoDesk(QWidget *parent)
     btnLayout->addWidget(analyzeBtn);
     btnLayout->addWidget(importBtn);
 
+    generateDesKeyBtn = new QPushButton("Generate DES Key");
+    generateDesKeyBtn->setCursor(Qt::PointingHandCursor);
+    generateDesKeyBtn->setVisible(false); // مخفي أول مرة
+    addShadow(generateDesKeyBtn);
+    btnLayout->addWidget(generateDesKeyBtn); // اضفها مرة واحدة فقط
+
+    // ضيف الزر لمكان مناسب في Layout
+    // الربط مع الدالة
+    connect(generateDesKeyBtn, &QPushButton::clicked, [=]() {
+        QString desKey = generateDESKey();  // مهم: استدعاء الدالة بالاقواس ()
+        keyInput->setText(desKey);
+        //QMessageBox::information(this, "DES Key Generated", "A random DES key has been generated and filled into the Key field.");
+    });
+
     outputText = new QPlainTextEdit();
     outputText->setReadOnly(true);
     outputText->setStyleSheet("margin-top: 5px;");
@@ -301,12 +315,24 @@ CryptoDesk::CryptoDesk(QWidget *parent)
     updateAlgoInfo();
 }
 
+QString CryptoDesk::generateDESKey() {
+    QString key;
+    const QString chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    for (int i = 0; i < 8; ++i) {  // مفتاح DES طوله 8 بايت
+        int index = QRandomGenerator::global()->bounded(chars.length());
+        key.append(chars[index]);
+    }
+    return key;
+}
 
 void CryptoDesk::updateAlgoInfo() {
     QString algo = algoCombo->currentText();
+    // ---------- Default: Hide optional widgets ----------
     importBtn->setVisible(false);
     keyInput2->setVisible(false);
     labelKey2->setVisible(false);
+    generateDesKeyBtn->setVisible(false);
 
     generateKeyBtn->setVisible(false);
     labelPub->setVisible(false);
@@ -315,6 +341,8 @@ void CryptoDesk::updateAlgoInfo() {
     privateKeyOutput->setVisible(false);
 
     keyInput2->setVisible(false);
+
+    // ---------- Update placeholders and info ----------
     if (algo == "Caesar Cipher"){
         algoInfo->setText("Caesar Cipher: shift letters by a numeric key.");
         inputText->setPlaceholderText("Enter a text ( e.g.: Hello ) ");
@@ -399,8 +427,9 @@ void CryptoDesk::updateAlgoInfo() {
     }
     else if (algo == "DES Cipher") {
         algoInfo->setText("DES Cipher: symmetric 64-bit block cipher.");
-        inputText->setPlaceholderText("Enter text (e.g.: Hello World) ");
-        keyInput->setPlaceholderText("Enter a key (e.g.: MySecretKey) ");
+        inputText->setPlaceholderText("Enter text (e.g.: Hello World)");
+        keyInput->setPlaceholderText("Enter a key (e.g.: MySecretKey)");
+        generateDesKeyBtn->setVisible(true);
     }
 
 }
