@@ -36,19 +36,12 @@ private:
     QComboBox *algoCombo;
     QLabel *algoInfo;
     QLabel *labelKey2;
-    QPushButton *generateKeyBtn;
     QPushButton *generateDesKeyBtn;
     QString generateDESKey();
 
-    QLabel *labelPub;
-    QLineEdit *publicKeyOutput;
-
-    QLabel *labelPriv;
-    QLineEdit *privateKeyOutput;
 
     QPushButton *importBtn;
 
-    // <-- هنا ضيفنا المؤشر للـ History
     HistoryDialog *historyDialog;
 };
 

@@ -11,39 +11,21 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets Core Gui)
 set(SOURCES
     main.cpp
     cryptodesk.cpp
-    caesar.cpp
-    playfair.cpp
-    hill.cpp
-       multiplicative.cpp
 )
 
 set(HEADERS
     cryptodesk.h
-    caesar.h
-    playfair.h
-    hill.h
-       multiplicative.h
 )
 
 add_executable(CryptoDesk ${SOURCES} ${HEADERS}
-    multiplicative.h
-    multiplicative.cpp
-    Affine.h
-    Affine.cpp
     vigenere.h
     vigenere.cpp
     dna.h
     dna.cpp
-    autokey.h
-    autokey.cpp
     vernam.h
     vernam.cpp
     transposition.h
     transposition.cpp
-    rsa.h
-    rsa.cpp
-    customRSA.cpp
-    customRSA.h
     dialogutils.h
     dialogutils.cpp
     analysisdialog.h

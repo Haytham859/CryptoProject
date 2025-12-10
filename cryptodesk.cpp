@@ -12,28 +12,18 @@
 
 // Include all cipher headers
 #include "historydialog.h"
-#include "caesar.h"
 #include "htmlexporter.h"
-#include "playfair.h"
-#include "hill.h"
-#include "multiplicative.h"
-#include "affine.h"
 #include "dna.h"
 #include "vigenere.h"
-#include "autokey.h"
 #include "vernam.h"
 #include "transposition.h"
-#include "rsa.h"
 #include "Des.h"
 #include "AES.h"
-#include "customRSA.h"
 #include "dialogutils.h"
 #include "analysisdialog.h"
 
 #include <QRandomGenerator>
 
-// Helper function for RSA key generation
-#include <tuple>
 
 CryptoDesk::CryptoDesk(QWidget *parent)
     : QMainWindow(parent)
@@ -153,7 +143,6 @@ CryptoDesk::CryptoDesk(QWidget *parent)
 
     labelKey2 = new QLabel("Key b:");
     keyInput2 = new QLineEdit();
-    keyInput2->setPlaceholderText("Second key b for Affine");
     labelKey2->setVisible(false);
     keyInput2->setVisible(false);
 
@@ -161,11 +150,12 @@ CryptoDesk::CryptoDesk(QWidget *parent)
     QLabel *labelAlgo = new QLabel("Algorithm:");
     algoCombo = new QComboBox();
     algoCombo->addItems({
-        "Caesar Cipher", "Playfair Cipher", "Hill Cipher (2x2)",
-        "Multiplicative Cipher", "Affine Cipher", "DNA Cipher",
-        "Vigenère Cipher", "Autokey Cipher", "Vernam Cipher",
-        "Rail Fence Cipher", "Columnar Cipher", "Row Transposition Cipher",
-        "RSA Cipher", "Custom RSA Cipher","DES Cipher","AES Cipher"
+        "DNA Cipher",
+        "Vigenère Cipher",
+        "Vernam Cipher",
+        "Row Transposition Cipher",
+        "DES Cipher",
+        "AES Cipher"
     });
     algoCombo->setStyleSheet("margin-bottom: 5px;");
 
@@ -189,27 +179,22 @@ CryptoDesk::CryptoDesk(QWidget *parent)
     QPushButton *encryptBtn = new QPushButton("Encrypt");
     QPushButton *decryptBtn = new QPushButton("Decrypt");
     QPushButton *fileBtn = new QPushButton("Encrypt File");
-    generateKeyBtn = new QPushButton("Generate RSA Key");
-    generateKeyBtn->setVisible(false);
-
-    publicKeyOutput = new QLineEdit();
-    privateKeyOutput = new QLineEdit();
-    publicKeyOutput->setReadOnly(true);
-    privateKeyOutput->setReadOnly(true);
-    publicKeyOutput->setVisible(false);
-    privateKeyOutput->setVisible(false);
+    encryptBtn->setCursor(Qt::PointingHandCursor);
+    decryptBtn->setCursor(Qt::PointingHandCursor);
+    fileBtn->setCursor(Qt::PointingHandCursor);
 
     QPushButton *analyzeBtn = new QPushButton("Analyze");
     addShadow(analyzeBtn);
+    analyzeBtn->setCursor(Qt::PointingHandCursor);
 
     importBtn = new QPushButton("Lab Report System");
     addShadow(importBtn);
+    importBtn->setCursor(Qt::PointingHandCursor);
 
     QHBoxLayout *btnLayout = new QHBoxLayout();
     btnLayout->addWidget(encryptBtn);
     btnLayout->addWidget(decryptBtn);
     btnLayout->addWidget(fileBtn);
-    btnLayout->addWidget(generateKeyBtn);
     btnLayout->addWidget(analyzeBtn);
     btnLayout->addWidget(importBtn);
 
@@ -224,7 +209,6 @@ CryptoDesk::CryptoDesk(QWidget *parent)
     connect(generateDesKeyBtn, &QPushButton::clicked, [=]() {
         QString desKey = generateDESKey();  // مهم: استدعاء الدالة بالاقواس ()
         keyInput->setText(desKey);
-        //QMessageBox::information(this, "DES Key Generated", "A random DES key has been generated and filled into the Key field.");
     });
 
     outputText = new QPlainTextEdit();
@@ -237,21 +221,9 @@ CryptoDesk::CryptoDesk(QWidget *parent)
     layout->addWidget(inputText);
     layout->addWidget(labelKey);
     layout->addWidget(keyInput);
-    layout->addWidget(labelKey2);
-    layout->addWidget(keyInput2);
     layout->addWidget(labelAlgo);
     layout->addLayout(algoLayout);
     layout->addLayout(btnLayout);
-
-    labelPub = new QLabel("Public Key (n, e):");
-    labelPub->setVisible(false);
-    layout->addWidget(labelPub);
-    layout->addWidget(publicKeyOutput);
-
-    labelPriv = new QLabel("Private Key (n, d):");
-    labelPriv->setVisible(false);
-    layout->addWidget(labelPriv);
-    layout->addWidget(privateKeyOutput);
 
     QPushButton *clearBtn = new QPushButton("Clear All");
     btnLayout->addWidget(clearBtn);
@@ -261,7 +233,6 @@ CryptoDesk::CryptoDesk(QWidget *parent)
     addShadow(encryptBtn);
     addShadow(decryptBtn);
     addShadow(fileBtn);
-    addShadow(generateKeyBtn);
     addShadow(clearBtn);
 
     // ----- Initialize HistoryDialog -----
@@ -281,19 +252,10 @@ CryptoDesk::CryptoDesk(QWidget *parent)
         DialogUtils::showAbout(this);
     });
 
-    connect(generateKeyBtn, &QPushButton::clicked, [=](){
-        auto [n,e,d] = generateRSAKeys();
-        publicKeyOutput->setText(QString("(%1, %2)").arg(n).arg(e));
-        privateKeyOutput->setText(QString("(%1, %2)").arg(n).arg(d));
-    });
-
     connect(clearBtn, &QPushButton::clicked, [=](){
         inputText->clear();
         keyInput->clear();
-        keyInput2->clear();
         outputText->clear();
-        publicKeyOutput->clear();
-        privateKeyOutput->clear();
         inputText->setFocus();
     });
 
@@ -330,48 +292,11 @@ void CryptoDesk::updateAlgoInfo() {
     QString algo = algoCombo->currentText();
     // ---------- Default: Hide optional widgets ----------
     importBtn->setVisible(false);
-    keyInput2->setVisible(false);
-    labelKey2->setVisible(false);
     generateDesKeyBtn->setVisible(false);
 
-    generateKeyBtn->setVisible(false);
-    labelPub->setVisible(false);
-    publicKeyOutput->setVisible(false);
-    labelPriv->setVisible(false);
-    privateKeyOutput->setVisible(false);
-
-    keyInput2->setVisible(false);
 
     // ---------- Update placeholders and info ----------
-    if (algo == "Caesar Cipher"){
-        algoInfo->setText("Caesar Cipher: shift letters by a numeric key.");
-        inputText->setPlaceholderText("Enter a text ( e.g.: Hello ) ");
-        keyInput->setPlaceholderText("Enter Number as a key ( e.g.: 2 ) ");
-    }
-    else if (algo == "Playfair Cipher"){
-        algoInfo->setText("Playfair Cipher: uses digraphs and a keyword matrix.");
-        inputText->setPlaceholderText("Enter a text ( e.g.: Hello ) ");
-        keyInput->setPlaceholderText("Enter a text as a key ( e.g.: PlayfairExample ) ");
-        }
-    else if (algo == "Hill Cipher (2x2)"){
-        algoInfo->setText("Hill Cipher 2x2: uses 2x2 matrix multiplication.");
-        inputText->setPlaceholderText("Enter a text ( e.g.: Hi ) ");
-        keyInput->setPlaceholderText("Enter 4 letters without any spaces ( e.g.: Test ) ");
-    }
-    else if (algo=="Multiplicative Cipher"){
-        algoInfo->setText("Multiplicative Cipher: multiply letters by key modulo 26 (key must be coprime with 26).");
-        inputText->setPlaceholderText("Enter a Text ( e.g.: Hello ) ");
-        keyInput->setPlaceholderText("Enter A Number That Is Coprime With 26 ( e.g.: 3 ) ");
-    }
-    else if (algo=="Affine Cipher") {
-        algoInfo->setText("Affine Cipher: E(x) = (a*x + b) mod 26, 'a' coprime with 26");
-        keyInput2->setVisible(true);
-        labelKey2->setVisible(true);
-        inputText->setPlaceholderText("Enter a text ( e.g.: Hello ) ");
-        keyInput->setPlaceholderText("Enter A Number That Is Coprime With 26 ( e.g.: 5 ) ");
-        keyInput2->setPlaceholderText("Enter Number as a key ( e.g.: 8 ) ");
-    }
-    else if (algo == "DNA Cipher"){
+    if (algo == "DNA Cipher"){
         importBtn->setVisible(true);
         algoInfo->setText("DNA Cipher: encodes text using nucleotide mapping.");
         inputText->setPlaceholderText("Enter a text ( e.g.: Hello World! ) ");
@@ -382,48 +307,15 @@ void CryptoDesk::updateAlgoInfo() {
         inputText->setPlaceholderText("Enter a text ( e.g.: Lemon ) ");
         keyInput->setPlaceholderText("Enter Text as a key ( e.g.: Pizza ) ");
     }
-    else if (algo == "Autokey Cipher"){
-        algoInfo->setText("Autokey Cipher: extends the key with plaintext.");
-        inputText->setPlaceholderText("Enter a text ( e.g.: HELLO ) ");
-        keyInput->setPlaceholderText("Enter Text as a key ( e.g.: N ) ");
-    }
     else if (algo == "Vernam Cipher"){
         algoInfo->setText("Vernam Cipher: XOR with a one-time pad key.");
         inputText->setPlaceholderText("Enter a text ( e.g.: HELLO ) ");
         keyInput->setPlaceholderText("Enter Text as a key ( e.g.: SON ) ");
     }
-    else if (algo == "Rail Fence Cipher"){
-        algoInfo->setText("Rail Fence Cipher: transposition using zigzag pattern.");
-        inputText->setPlaceholderText("Enter a text ( e.g.: Meet Me After The Party ) ");
-        keyInput->setPlaceholderText("Enter a Number as a key ( e.g.: 2 ) ");
-    }
-    else if (algo == "Columnar Cipher"){
-        algoInfo->setText("Columnar Cipher: text arranged in columns based on key.");
-        inputText->setPlaceholderText("Enter a text ( e.g.: Meet Me After The Party ) ");
-        keyInput->setPlaceholderText("Enter Number of columns as a key ( e.g.: 3 ) ");
-    }
     else if (algo == "Row Transposition Cipher"){
         algoInfo->setText("Row Transposition Cipher: permutes rows according to key.");
         inputText->setPlaceholderText("Enter a text ( e.g.: attack postponed until two am ) ");
         keyInput->setPlaceholderText("Enter numbers according to the desired array order ( e.g.: 412367 ) ");
-    }
-    else if (algo == "RSA Cipher"){
-        algoInfo->setText("RSA Cipher: asymmetric encryption using public/private keys.");
-        inputText->setPlaceholderText("Enter a Text ( e.g.: Hello ) ");
-        keyInput->setPlaceholderText("Enter a key with n , e  ( e.g.: (33,7) ) ");
-        generateKeyBtn->setVisible(true);
-        labelPub->setVisible(true);
-        publicKeyOutput->setVisible(true);
-        labelPriv->setVisible(true);
-        privateKeyOutput->setVisible(true);
-    }
-    else if (algo == "Custom RSA Cipher"){
-        algoInfo->setText("RSA Cipher: asymmetric encryption using p and q .");
-        keyInput2->setVisible(true);
-        labelKey2->setVisible(true);
-        inputText->setPlaceholderText("Enter a Text ( e.g.: Hello ) ");
-        keyInput->setPlaceholderText("Enter the the value of p ( e.g.: 7 ) ");
-        keyInput2->setPlaceholderText("Enter the the value of q ( e.g.: 11 ) ");
     }
     else if (algo == "DES Cipher") {
         algoInfo->setText("DES Cipher: symmetric 64-bit block cipher.");
@@ -443,7 +335,7 @@ bool CryptoDesk::validateInputs() {
         QMessageBox::warning(this, "Input Error", "Key cannot be empty!");
         return false;
     }
-    if (key1.contains(" ") && algo != "RSA Cipher") {
+    if (key1.contains(" ")) {
         QMessageBox::warning(this, "Input Error", "Remove Spaces!");
         return false;
     }
@@ -451,8 +343,6 @@ bool CryptoDesk::validateInputs() {
     QRegularExpression isNumber("^[0-9]+$");
     QRegularExpression isText("^[a-zA-Z]+$");
     QRegularExpression isHex("^[0-9A-Fa-f]+$");  // <-- اضف ده
-
-    // التحقق للـ AES
     if (algo == "AES Cipher") {
         // فقط تحقق من إن المفتاح والنص مش فاضي
         if (key1.isEmpty()) {
@@ -466,81 +356,20 @@ bool CryptoDesk::validateInputs() {
     }
 
 
-
-    // =========================================================
-    // المجموعة الأولى: خوارزميات تحتاج أرقام فقط (Integer Keys)
-    // =========================================================
-    if (algo == "Caesar Cipher" ||
-        algo == "Multiplicative Cipher" ||
-        algo == "Rail Fence Cipher" ||
-        algo == "Columnar Cipher") {
-
-        if (!isNumber.match(key1).hasMatch()) {
-            QMessageBox::warning(this, "Input Error",
-                                 QString("The key for %1 must be a valid Integer number!").arg(algo));
-            return false;
-        }
-
-        if (algo == "Multiplicative Cipher" && key1.toInt() == 0) {
-            QMessageBox::warning(this, "Input Error", "Key cannot be zero!");
-            return false;
-        }
-    }
-
     // =========================================================
     // المجموعة الثانية: خوارزميات تحتاج حروف فقط (String Keys)
     // =========================================================
-    else if (algo == "Playfair Cipher" ||
-             algo == "Vigenère Cipher" ||
-             algo == "Autokey Cipher" ||
-             algo == "Vernam Cipher" ||
-             algo == "DNA Cipher") {
-
+    else if (algo == "Vigenère Cipher" || algo == "Vernam Cipher" || algo == "DNA Cipher") {
         if (!isText.match(key1).hasMatch()) {
-            QMessageBox::warning(this, "Input Error",
-                                 QString("The key for %1 must contain English letters only (No numbers or symbols)!").arg(algo));
+            QMessageBox::warning(this, "Input Error", QString("The key for %1 must contain English letters only (No numbers or symbols)!").arg(algo));
             return false;
         }
     }
 
-    // =========================================================
-    // المجموعة الثالثة: حالات خاصة (Hill, Row Transposition)
-    // =========================================================
-    else if (algo == "Hill Cipher (2x2)") {
-        if (!isText.match(key1).hasMatch() || key1.length() != 4) {
-            QMessageBox::warning(this, "Input Error",
-                                 "Hill Cipher (2x2) key must be exactly 4 letters!");
-            return false;
-        }
-    }
     else if (algo == "Row Transposition Cipher") {
 
         if (!isNumber.match(key1).hasMatch()) {
             QMessageBox::warning(this, "Input Error", "Row Transposition key usually consists of numbers (e.g., 4312)!");
-            return false;
-        }
-    }
-
-    // =========================================================
-    // المجموعة الرابعة: خوارزميات بمفتاحين (Affine, Custom RSA)
-    // =========================================================
-    else if (algo == "Affine Cipher") {
-        if (!isNumber.match(key1).hasMatch()) {
-            QMessageBox::warning(this, "Input Error", "Key 'a' must be a number!");
-            return false;
-        }
-        if (key2.isEmpty() || !isNumber.match(key2).hasMatch()) {
-            QMessageBox::warning(this, "Input Error", "Key 'b' must be a number!");
-            return false;
-        }
-    }
-    else if (algo == "Custom RSA Cipher") {
-        if (!isNumber.match(key1).hasMatch()) {
-            QMessageBox::warning(this, "Input Error", "P must be a number!");
-            return false;
-        }
-        if (key2.isEmpty() || !isNumber.match(key2).hasMatch()) {
-            QMessageBox::warning(this, "Input Error", "Q must be a number!");
             return false;
         }
     }
@@ -562,31 +391,14 @@ void CryptoDesk::encryptText() {
     if (!validateInputs()) return;
 
     // ----- تشفير حسب الخوارزمية -----
-    if (algo == "Caesar Cipher") result = caesarEncrypt(text, keyInput->text().toInt());
-    else if (algo == "Playfair Cipher") result = playfairEncrypt(text, keyInput->text());
-    else if (algo == "Multiplicative Cipher") result = multiplicativeEncrypt(text, keyInput->text().toInt());
-    else if (algo == "Hill Cipher (2x2)") result = hillEncrypt(text, keyInput->text());
-    else if (algo == "Affine Cipher") {
-        int a = keyInput->text().toInt();
-        int b = keyInput2->text().toInt();
-        result = affineEncrypt(text, a, b);
-    }
-    else if (algo == "DNA Cipher") result = dnaEncrypt(text, keyInput->text());
+    if (algo == "DNA Cipher") result = dnaEncrypt(text, keyInput->text());
     else if (algo == "Vigenère Cipher") result = vigenereEncrypt(text, keyInput->text());
-    else if (algo == "Autokey Cipher") result = autokeyEncrypt(text, keyInput->text());
     else if (algo == "Vernam Cipher") result = vernamEncrypt(text, keyInput->text());
-    else if (algo == "Rail Fence Cipher") result = railFenceEncrypt(text, keyInput->text().toInt());
-    else if (algo == "Columnar Cipher") { int a = keyInput->text().toInt(); result = columnarEncrypt(text, a); }
     else if (algo == "Row Transposition Cipher") result = rowTranspositionEncrypt(text, keyInput->text());
-    else if (algo == "RSA Cipher") result = rsaEncrypt(text, keyInput->text(), keyInput2->text());
-    else if (algo == "Custom RSA Cipher") result = rsaEncryptCustom(text, keyInput->text(), keyInput2->text());
     else if (algo == "DES Cipher") {
-       // result = rsaEncryptCustom(text, keyInput->text(), keyInput2->text());
         result= desEncryptText(text,keyInput->text()) ;
     }
     else if (algo == "AES Cipher") {
-        // result = rsaEncryptCustom(text, keyInput->text(), keyInput2->text());
-        //result= deEncryptText(text,keyInput->text()) ;
         result=aesEncryptText(text,keyInput->text()) ;
     }
     // ----- عرض الناتج -----
@@ -617,25 +429,10 @@ void CryptoDesk::decryptText() {
 
     if (!validateInputs()) return;
 
-    // ----- فك التشفير حسب الخوارزمية -----
-    if (algo == "Caesar Cipher") result = caesarDecrypt(text, keyInput->text().toInt());
-    else if (algo == "Playfair Cipher") result = playfairDecrypt(text, keyInput->text());
-    else if (algo == "Multiplicative Cipher") result = multiplicativeDecrypt(text, keyInput->text().toInt());
-    else if (algo == "Hill Cipher (2x2)") result = hillDecrypt(text, keyInput->text());
-    else if (algo == "Affine Cipher") {
-        int a = keyInput->text().toInt();
-        int b = keyInput2->text().toInt();
-        result = affineDecrypt(text, a, b);
-    }
-    else if (algo == "DNA Cipher") result = dnaDecrypt(text, keyInput->text());
+    if (algo == "DNA Cipher") result = dnaDecrypt(text, keyInput->text());
     else if (algo == "Vigenère Cipher") result = vigenereDecrypt(text, keyInput->text());
-    else if (algo == "Autokey Cipher") result = autokeyDecrypt(text, keyInput->text());
     else if (algo == "Vernam Cipher") result = vernamDecrypt(text, keyInput->text());
-    else if (algo == "Rail Fence Cipher") result = railFenceDecrypt(text, keyInput->text().toInt());
-    else if (algo == "Columnar Cipher") { int a = keyInput->text().toInt(); result = columnarDecrypt(text, a); }
     else if (algo == "Row Transposition Cipher") result = rowTranspositionDecrypt(text, keyInput->text());
-    else if (algo == "RSA Cipher") result = rsaDecrypt(text, keyInput->text(), keyInput2->text());
-    else if (algo == "Custom RSA Cipher") result = rsaDecryptCustom(text, keyInput->text(), keyInput2->text());
     else if (algo == "DES Cipher") {
         result=desDecryptText(text,keyInput->text()) ;
     }
@@ -666,28 +463,20 @@ void CryptoDesk::encryptFile() {
     if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) return;
     QTextStream in(&f);
     QString content = in.readAll();
-    f.close();
+    f.close();    
 
     QString algo = algoCombo->currentText();
     QString result;
 
-    // ----- تشفير حسب الخوارزمية -----
-    if (algo == "Caesar Cipher") result = caesarEncrypt(content, keyInput->text().toInt());
-    else if (algo == "Playfair Cipher") result = playfairEncrypt(content, keyInput->text());
-    else if (algo == "Multiplicative Cipher") result = multiplicativeEncrypt(content, keyInput->text().toInt());
-    else if (algo == "Hill Cipher (2x2)") result = hillEncrypt(content, keyInput->text());
-    else if (algo == "Affine Cipher") { int a = keyInput->text().toInt(); int b = keyInput2->text().toInt(); result = affineEncrypt(content, a, b); }
-    else if (algo == "DNA Cipher") result = dnaEncrypt(content, keyInput->text());
-    else if (algo == "Vigenère Cipher") result = vigenereEncrypt(content, keyInput->text());
-    else if (algo == "Autokey Cipher") result = autokeyEncrypt(content, keyInput->text());
-    else if (algo == "Vernam Cipher") result = vernamEncrypt(content, keyInput->text());
-    else if (algo == "Rail Fence Cipher") result = railFenceEncrypt(content, keyInput->text().toInt());
-    else if (algo == "Columnar Cipher") { int a = keyInput->text().toInt(); result = columnarEncrypt(content, a); }
-    else if (algo == "Row Transposition Cipher") result = rowTranspositionEncrypt(content, keyInput->text());
-    else if (algo == "RSA Cipher") result = rsaEncrypt(content, keyInput->text(), keyInput2->text());
-    else if (algo == "Custom RSA Cipher") result = rsaEncryptCustom(content, keyInput->text(), keyInput2->text());
+    if (!validateInputs()) return;
 
-    // ----- حفظ الملف -----
+    // ----- تشفير حسب الخوارزمية -----
+    if (algo == "DNA Cipher") result = dnaEncrypt(content, keyInput->text());
+    else if (algo == "Vigenère Cipher") result = vigenereEncrypt(content, keyInput->text());
+    else if (algo == "Vernam Cipher") result = vernamEncrypt(content, keyInput->text());
+    else if (algo == "Row Transposition Cipher") result = rowTranspositionEncrypt(content, keyInput->text());
+
+
     QString save = QFileDialog::getSaveFileName(this, "Save encrypted file");
     if (save.isEmpty()) return;
 
@@ -716,81 +505,78 @@ void CryptoDesk::addShadow(QWidget *widget) {
 }
 
 void CryptoDesk::handleLabReport() {
-    // 1. نسأل المستخدم هو عايز إيه
+    // Prompt user for action
     QMessageBox msgBox;
     msgBox.setWindowTitle("Lab Report System");
     msgBox.setText("Please select an action:");
     msgBox.setIcon(QMessageBox::Question);
 
-    // بنضيف زراير مخصصة
+    // Add custom buttons
     QAbstractButton *pExportBtn = msgBox.addButton("📝 Generate New Report", QMessageBox::YesRole);
     QAbstractButton *pImportBtn = msgBox.addButton("📂 Open Existing Report", QMessageBox::NoRole);
     msgBox.addButton(QMessageBox::Cancel);
 
     msgBox.exec();
 
-    // 2. نشوف المستخدم اختار إيه
+    // Handle user selection
     if (msgBox.clickedButton() == pExportBtn) {
-        // --- مسار الـ EXPORT ---
-
-        // أ) التحقق من المدخلات (Validation)
+        // Validate inputs
         if (inputText->text().isEmpty()) {
             QMessageBox::warning(this, "Missing Data", "Cannot generate report: Diagnosis result (Text) is empty!");
-            return; // وقف هنا متكملش
+            return;
         }
         if (keyInput->text().isEmpty()) {
             QMessageBox::warning(this, "Missing Data", "Cannot generate report: Sample ID (Key) is empty!");
-            return; // وقف هنا متكملش
+            return;
         }
 
-        // ب) لو كله تمام، نفذ
+        // Proceed to export
         performExport();
 
     } else if (msgBox.clickedButton() == pImportBtn) {
-        // --- مسار الـ IMPORT ---
-        // هنا مش محتاجين نتأكد من inputs لأننا لسه هنملاهم من الملف
+        // Proceed to import
         performImport();
     }
 }
 
 void CryptoDesk::performExport() {
-    // 1. ناخد البيانات الجاهزة (إحنا اتأكدنا فوق إنها موجودة خلاص)
+    // Get input data
     QString diagnosis = inputText->text();
     QString sampleID = keyInput->text();
 
-    // (اختياري) نطلب اسم المريض
+    // Optional: Ask for patient name
     bool ok;
     QString patientName = QInputDialog::getText(this, "Patient Data", "Enter Patient Name:", QLineEdit::Normal, "John Doe", &ok);
     if (!ok) return;
 
-    // 2. التشفير
+    // Encrypt data
     QString encryptedDNA = dnaEncrypt(diagnosis, sampleID);
 
-    // 3. فتح نافذة الحفظ
+    // Open save dialog
     QString fileName = QFileDialog::getSaveFileName(this, "Save Report", "Report.html", "HTML Files (*.html)");
     if (fileName.isEmpty()) return;
 
-    // 4. الحفظ باستخدام الكلاس اللي عملناه
+    // Generate and save HTML
     if (HtmlExporter::saveLabReport(fileName, patientName, sampleID, encryptedDNA)) {
         QMessageBox::information(this, "Success", "Report Generated!");
     }
 }
 
 void CryptoDesk::performImport() {
-    // 1. فتح نافذة الاستيراد
+    // Open file dialog
     QString fileName = QFileDialog::getOpenFileName(this, "Select Report", "", "HTML Files (*.html)");
     if (fileName.isEmpty()) return;
 
-    // 2. استخدام الكلاس الخارجي للقراءة
+    // Parse report file
     ReportData data = HtmlExporter::parseLabReport(fileName);
 
     if (data.isValid) {
-        // فك التشفير
+        // Decrypt data
         QString result = dnaDecrypt(data.encryptedData, data.sampleID);
 
-        // عرض البيانات
+        // Update UI
         algoCombo->setCurrentText("DNA Cipher");
-        inputText->setText(result);
+        inputText->setText(data.encryptedData);
         keyInput->setText(data.sampleID);
         outputText->setPlainText("Report Loaded:\n" + result);
 
@@ -801,21 +587,21 @@ void CryptoDesk::performImport() {
 }
 
 void CryptoDesk::importHtmlReport() {
-    // 1. نفتح الملف
+    // Open file dialog
     QString fileName = QFileDialog::getOpenFileName(this, "Select Lab Report", "", "HTML Files (*.html)");
     if (fileName.isEmpty()) return;
 
-    // 2. نطلب من الكلاس الخارجي يحلل الملف ويرجعلنا البيانات
+    // Parse data
     ReportData data = HtmlExporter::parseLabReport(fileName);
 
-    // 3. نتأكد إن البيانات سليمة ونعرضها
+    // Validate and display
     if (data.isValid) {
-        // نفك التشفير هنا في الواجهة (أو نستدعي دالة الفك)
+       // Decrypt data
+        inputText->setText(data.encryptedData);
         QString decryptedDiagnosis = dnaDecrypt(data.encryptedData, data.sampleID);
 
-        // تحديث الواجهة
+        // Update UI
         algoCombo->setCurrentText("DNA Cipher");
-        inputText->setText(decryptedDiagnosis);
         keyInput->setText(data.sampleID);
         outputText->setPlainText("Decrypted from HTML Report:\n" + decryptedDiagnosis);
 
